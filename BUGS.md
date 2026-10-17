@@ -12,6 +12,7 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 5 | Fixed | Simulation probe (M2) |
 | 6 | Fixed | Unit test (M2) |
 | 7 | Fixed | Browser check (M2) |
+| 8 | Fixed | Unit test (M3) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -54,3 +55,9 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** the live text described the *current* rotation (e.g. 147° → rounds to 0 flips).
 - **Fix:** the live text describes the committed rotation targets plus any grab being held (`session.currentTrickText`).
 - **Proof:** `e2e/tricks.spec.js` › "kickflip: ... live trick name shows while flipping" asserts the HUD contains "Kickflip" mid-air — passes.
+
+## 8. A full second of grinding paid 1 Bolt instead of 2
+- **Symptom:** `earnFromGrind` called 60 times with `dt = 1/60` returned 1 Bolt in total.
+- **Cause:** floating-point accumulation: the remainder summed to 0.99999…, and `Math.floor` dropped it.
+- **Fix:** floor with a small epsilon (`Math.floor(total + 1e-9)`) and clamp the remainder at 0 (`src/game/economy.js`).
+- **Proof:** `tests/economy.test.js` › "grinding earns per second, capped per run" and `tests/progression.test.js` › "grind time Bolts are paid when the grind scores" — both pass.

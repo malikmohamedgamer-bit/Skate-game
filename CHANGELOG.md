@@ -40,3 +40,21 @@ Verified
 - Screenshots checked: obstacles render, board mid-kickflip, grind HUD with balance meter.
 - Bugs found and fixed this milestone: BUGS.md #3–#7.
 - `npx eslint .` → clean.
+
+## Milestone 3 — Scoring and currency
+
+Added
+- `src/game/scoring.js` (pure): combo count, multiplier `1 + 0.5 × (combo − 1)` capped at **×5** (`COMBO_MULTIPLIER_CAP`), bail resets the combo, combo banks after 3 s on the ground (paused while airborne/grinding).
+- `src/game/economy.js` (pure): Bolts. 1 Bolt per 40 trick points (cap 300/run), 2 Bolts per grind second (cap 120/run), 10 per pickup (once per run), level base 25 + first-time star bonuses (40/60/100). `spend()` checks the balance first and can never go negative; balances are sanitized to integers in [0, 999,999,999]. Starting balance 150.
+- `src/core/save.js`: schema v3 with step migrations v1 → v2 → v3, field-by-field normalization of hand-edited saves, corrupt/future saves backed up under `boltskate.save.backup`, storage failures never crash (in-memory fallback).
+- `src/game/progression.js`: applies session events to the run and profile (score, Bolts, stats, combo end).
+- `src/main.js`: restructured around a screen router; profile load/save (every 2 s when dirty, on pause, quit, tab hide); HUD score/combo/Bolts; camera cycle (C) and respawn (R) keys.
+- Test fixtures `tests/fixtures/save-v1.json`, `save-v2.json`.
+
+Verified
+- `npm test` → 109 tests, 109 pass (scoring 7, economy 10, save 9, progression 6 new).
+- Save migration: the v1 fixture loads as schema 3 with coins → Bolts (420), known boards → item ids, equipped board, audio settings and best scores kept.
+- `npx playwright test` → 12 passed, including: kickflip raises score and Bolts and the HUD shows both; two ollies give combo 2 / ×1.5 and a bail resets it; Bolts survive a page reload (`saveStatus: current`).
+- Screenshot: HUD shows score, "Combo 2 · x1.5", "✔ Clean Kickflip +399 · x1.5", Bolts.
+- Bug found and fixed: BUGS.md #8 (grind Bolt float accumulation).
+- `npx eslint .` → clean.

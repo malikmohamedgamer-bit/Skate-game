@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "coins": 420,
+  "boards": ["basic", "pro", "rocket"],
+  "board": "pro",
+  "options": { "volume": 0.4, "muted": true },
+  "best": { "park-1": 5200, "street-1": 1800 }
+}

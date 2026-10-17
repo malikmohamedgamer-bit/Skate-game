@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 2,
+  "bolts": 975,
+  "owned": ["vehicle_skateboard", "deck_street", "wheels_soft"],
+  "equippedBoard": "deck_street",
+  "settings": { "audio": { "volume": 0.5, "muted": false } },
+  "levels": { "street-1": { "bestScore": 3100, "stars": 2 } },
+  "quests": { "story-first-push": { "progress": 1, "done": true }, "c-grind-30": { "progress": 12.5, "done": false } }
+}
