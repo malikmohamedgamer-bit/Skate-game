@@ -26,6 +26,8 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 19 | Fixed | Screenshot check (M8) |
 | 20 | Fixed | Screenshot check (M8) |
 | 21 | Fixed | Screenshot check (M8) |
+| 22 | Fixed | Soak test (M9) |
+| 23 | Fixed | Requirements review (M9) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -37,7 +39,7 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Symptom:** none visible yet; would cause steady garbage growth during scooter flips.
 - **Cause:** `rider.update()` created a `THREE.Group` and a `THREE.Vector3` every frame in the scooter flip branch.
 - **Fix:** removed the stray group; reuse a module-level `X_AXIS` vector.
-- **Proof:** soak test memory check (milestone 9).
+- **Proof:** soak test (milestone 9): 5 minutes of random play in one skatepark session keeps the JS heap flat after warm-up (6.18–6.43 MB, sampled every minute after GC), with no errors.
 
 ## 3. Riding up stairs at an allowed angle got blocked by the platform edge
 - **Symptom:** climbing the training stairs at 30° (limit is 40°) bounced off the platform one step before the top.
@@ -152,3 +154,15 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** the tracker sits in the right column, where one-handed buttons also go.
 - **Fix:** on screens shorter than 520 px the HUD is compacted and the tracker moves under the score, showing one quest.
 - **Proof:** screenshot `m8-touch-onehand2` shows no overlap; `e2e/touch.spec.js` passes.
+
+## 22. Every new session leaked GPU textures
+- **Symptom:** the renderer's live texture count grew by one or two every time a map was started or restarted (2 → 13 after eight sessions). Over a long play session this keeps GPU memory growing; on a phone it could eventually crash the tab.
+- **Cause:** `buildMapScene().dispose()` disposed geometries and materials, but disposing a material does not free its texture (the canvas ground texture), and lights do not free their shadow maps.
+- **Fix:** scene teardown also disposes material textures and light shadow maps (`src/world/scene.js`). The rider's cached pattern textures are shared between riders, so they are tagged `userData.shared` and skipped.
+- **Proof:** new e2e test `e2e/maps.spec.js` › "switching maps releases GPU resources" fails without the fix (expected 2 textures, received 13) and passes with it. The soak test's `gpuAudit()` (draws everything once, then compares the renderer's live geometries and textures with what the scene references) matches exactly after every map. The object census across 42 restarts is flat.
+
+## 23. No true first-person camera
+- **Symptom:** the spec asks for first-person and top-down camera modes. The "close" mode was labelled "first-person-ish" but it is an over-the-shoulder chase camera 0.9 m behind the rider.
+- **Cause:** the requirement was only half met in milestone 1.
+- **Fix:** new `first` camera mode (`src/core/camera.js`): eyes at head height over the rider, looking down the line ahead, with no wall-avoidance pull and no positional lag (smoothing still applies to turning). The rider's body is hidden in that view (`setFirstPerson`) while the board or scooter stays. C now cycles follow → close → first person → top-down, and Settings lists "First person". Saves accept the new mode.
+- **Proof:** unit tests `tests/camera.test.js` › "first-person: eyes at head height …" and "… do not lag behind the rider"; `tests/save.test.js` › "every camera mode survives a save round trip" (fails if the save normalizer and `CAMERA_MODES` drift apart); e2e `e2e/core.spec.js` › "camera: C cycles follow → close → first person → top-down; first person hides the rider body". Screenshots `m9-firstperson.png` (skatepark) and `m9-firstperson-plaza.png` show the view at eye level with no body in frame.

@@ -144,9 +144,15 @@ export function buildMapScene(map, world, { highContrast = false, shadows = true
       sun.target.position.set(p.x, p.y, p.z);
     },
     dispose() {
+      // Materials do not free their textures, and lights do not free their shadow maps:
+      // release both explicitly or every new session leaks GPU memory.
       scene.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
-        if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose());
+        for (const m of o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []) {
+          if (m.map && !m.map.userData.shared) m.map.dispose();
+          m.dispose();
+        }
+        if (o.isLight && o.shadow) o.shadow.dispose();
       });
     },
   };

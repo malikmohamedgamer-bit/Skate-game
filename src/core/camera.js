@@ -1,10 +1,10 @@
 // Third-person follow camera with smoothing, wall-avoidance raycast, and
-// alternative "close" (first-person-ish) and "top" (top-down) modes.
+// alternative "close" (over the shoulder), "first" (first-person) and "top" (top-down) modes.
 
 import { raycast } from '../physics/collide.js';
 import { wrapAngle } from '../physics/math.js';
 
-export const CAMERA_MODES = ['follow', 'close', 'top'];
+export const CAMERA_MODES = ['follow', 'close', 'first', 'top'];
 
 /**
  * Per-frame interpolation factor for exponential smoothing.
@@ -29,6 +29,13 @@ export function desiredCamera(mode, target, yaw) {
     return {
       eye: { x: p.x - fx * 0.9, y: p.y + 1.75, z: p.z - fz * 0.9 },
       look: { x: p.x + fx * 6, y: p.y + 1.2, z: p.z + fz * 6 },
+    };
+  }
+  if (mode === 'first') {
+    // Eyes at head height, just ahead of the rider's centre, looking down the line.
+    return {
+      eye: { x: p.x + fx * 0.15, y: p.y + 1.55, z: p.z + fz * 0.15 },
+      look: { x: p.x + fx * 8, y: p.y + 0.6, z: p.z + fz * 8 },
     };
   }
   if (mode === 'top') {
@@ -95,10 +102,12 @@ export function createCameraRig(camera) {
       yaw = wrapAngle(yaw + wrapAngle(target.travelYaw - yaw) * aYaw);
       const want = desiredCamera(mode, target.pos, yaw);
       const pivot = { x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z };
-      const safe = mode === 'top' ? want.eye : avoidWalls(world, pivot, want.eye);
+      // Top-down looks over walls; first-person eyes are inside the rider's own clearance.
+      const safe = mode === 'top' || mode === 'first' ? want.eye : avoidWalls(world, pivot, want.eye);
       lastBlocked = !!safe.blocked;
       // When the view is blocked, move in quickly so we never look through a wall.
-      const a = !initialized ? 1 : safe.blocked ? Math.max(0.5, smoothingAlpha(smooth * 0.3, dt)) : smoothingAlpha(smooth, dt);
+      // First-person eyes stay on the head (smoothing then only applies to turning).
+      const a = !initialized || mode === 'first' ? 1 : safe.blocked ? Math.max(0.5, smoothingAlpha(smooth * 0.3, dt)) : smoothingAlpha(smooth, dt);
       eye.x += (safe.x - eye.x) * a;
       eye.y += (safe.y - eye.y) * a;
       eye.z += (safe.z - eye.z) * a;
@@ -120,7 +129,7 @@ export function createCameraRig(camera) {
       camera.position.set(eye.x + sx, eye.y + sy, eye.z);
       camera.lookAt(look.x, look.y, look.z);
       // Speed FOV kick, disabled under reduced motion (no rapid zoom).
-      const baseFov = mode === 'close' ? 75 : 62;
+      const baseFov = mode === 'close' || mode === 'first' ? 75 : 62;
       const targetFov = settings.reducedMotion ? baseFov : baseFov + Math.min(10, (target.speed || 0) * 0.7);
       const nf = camera.fov + (targetFov - camera.fov) * (settings.reducedMotion ? 1 : Math.min(1, dt * 3));
       if (Math.abs(nf - camera.fov) > 0.01) {

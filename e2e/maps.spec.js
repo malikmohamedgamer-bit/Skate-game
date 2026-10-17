@@ -46,3 +46,35 @@ test('riding through a pickup collects it and adds Bolts', async ({ page }) => {
   await expect(page.locator('#hud-bolts')).toHaveText(String(s1.bolts));
   expectNoErrors(errors);
 });
+
+test('switching maps releases GPU resources (no texture or geometry leak)', async ({ page }) => {
+  const errors = await openGame(page);
+  const info = (mapId) =>
+    page.evaluate((id) => {
+      window.__game.startFreeRoam(id);
+      window.__game.setManual(true);
+      window.__game.advance(1);
+      return window.__game.renderInfo();
+    }, mapId);
+  const first = await info('training');
+  for (const m of ['neighborhood', 'skatepark', 'plaza', 'downtown', 'training', 'training']) await info(m);
+  const again = await info('training');
+  // Before the fix every session left its ground texture behind (2 -> 13 textures here).
+  expect(again.textures).toBe(first.textures);
+  expect(again.geometries).toBe(first.geometries);
+  const audit = await page.evaluate(() => window.__game.gpuAudit());
+  expect(audit.textures, 'renderer holds only the textures the scene uses').toBe(audit.sceneTextures);
+  expect(audit.geometries, 'renderer holds only the geometries the scene uses').toBe(audit.sceneGeometries);
+  // The audit also holds when hidden objects (the rider's body in first person) were never drawn.
+  const fp = await page.evaluate(() => {
+    window.__game.changeSetting('camera.mode', 'first');
+    window.__game.startFreeRoam('plaza');
+    window.__game.setManual(true);
+    window.__game.advance(0.5);
+    return { audit: window.__game.gpuAudit(), body: window.__game.state().riderBodyVisible };
+  });
+  expect(fp.body).toBe(false);
+  expect(fp.audit.geometries).toBe(fp.audit.sceneGeometries);
+  expect(fp.audit.textures).toBe(fp.audit.sceneTextures);
+  expectNoErrors(errors);
+});

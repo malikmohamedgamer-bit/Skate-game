@@ -97,6 +97,7 @@ function patternTexture(pattern, color, accent) {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.userData.shared = true; // cached across riders: scene teardown must not dispose it
   textureCache.set(key, tex);
   return tex;
 }
@@ -482,6 +483,7 @@ export function createRiderModel(lookIn) {
   let pushT = 0;
   let wheelSpin = 0;
   let bailT = 0;
+  let firstPerson = false;
 
   // Speed trail (ribbon of recent positions).
   const TRAIL_N = 36;
@@ -528,8 +530,17 @@ export function createRiderModel(lookIn) {
       orient.remove(mesh);
       disposeObject(mesh);
       mesh = buildVehicleMesh(look);
+      mesh.userData.rider.visible = !firstPerson;
       orient.add(mesh);
       applyTrail(mergeLook(look));
+    },
+    /** First-person camera: hide the rider's body (the board or scooter stays visible). */
+    setFirstPerson(on) {
+      firstPerson = !!on;
+      mesh.userData.rider.visible = !firstPerson;
+    },
+    get bodyVisible() {
+      return mesh.userData.rider.visible;
     },
     describe() {
       return describeMesh(mesh);

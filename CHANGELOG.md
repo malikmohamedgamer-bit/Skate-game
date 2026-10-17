@@ -115,7 +115,7 @@ Verified
 ## Milestone 7 — Customization and shop
 
 Added
-- `src/data/catalog.json`: 13 categories (boards & scooters; skateboard decks, trucks, wheels, grip tape; scooter decks, bars, wheels, forks; outfits, helmets, pads, trails), 49 items. Parts carry stat modifiers (decks → ollie, trucks/bars → turn rate, wheels → grip and speed, forks → grip, grip tape → trick bonus); outfits, helmets, pads and trails are cosmetic. 12 named colors (with an Okabe-Ito colorblind-safe subset) and 7 named patterns.
+- `src/data/catalog.json`: 13 categories (boards & scooters; skateboard decks, trucks, wheels, grip tape; scooter decks, bars, wheels, forks; outfits, helmets, pads, trails), 48 items (this entry originally said 49; corrected in milestone 9). Parts carry stat modifiers (decks → ollie, trucks/bars → turn rate, wheels → grip and speed, forks → grip, grip tape → trick bonus); outfits, helmets, pads and trails are cosmetic. 12 named colors (with an Okabe-Ito colorblind-safe subset) and 7 named patterns.
 - `src/game/customize.js` (pure): buy (balance checked first via `economy.spend`), equip (ownership + slot), stats from base + parts with clamps, stat deltas for previews, validated colors/patterns, contrast-based pattern accents, and the look object for the 3D model.
 - `src/ui/shop.js`: category tabs, item cards with price/owned/equipped text, Buy / Equip / Preview, hover/focus "try on", stat bars with ▲/▼ deltas, **live 3D preview of the real rider model** (one reused WebGL canvas, rotate buttons, auto-rotate off under reduced motion), color swatches by name with `aria-pressed`, custom color input, named pattern buttons.
 - Equipped gear is saved and applied in game (handling stats + rider look); the scooter is bought in the shop and changes the push style and tricks.
@@ -144,3 +144,41 @@ Verified
 - Screenshots: settings, phone touch layouts (two thumbs and one-handed), high contrast, colorblind palette with captions.
 - Bugs: BUGS.md #18–#21.
 - `npx eslint .` → clean.
+
+## Milestone 9 — Tests and bug fixes
+
+Added
+- Soak test `e2e/soak.spec.js` (`npm run test:soak`, config `playwright.soak.config.js`). Four parts, all with seeded random key presses (push, steer, brake, ollie, flips, spins, grabs, respawn, camera changes, pause and resume):
+  - 5 minutes of simulated play rotating through all five maps;
+  - 5 minutes in one skatepark session, sampled every minute;
+  - 42 session restarts with a live-object census;
+  - 60 s of real-time play on the requestAnimationFrame loop.
+
+  Every 0.25 s it checks: still playing, finite position and velocity, inside the map box, no out-of-bounds ticks, and no errors. It also measures the JS heap after GC and the GPU resources the renderer holds. Reports go to `reports/soak-*.json`.
+- `window.__game.gpuAudit()`: draws the whole scene once with hidden objects shown and no frustum culling, then compares the renderer's live geometries and textures with what the scene references. `renderInfo()`, rider `safetyResets`, map `bounds` and `riderBodyVisible` were also added to the test hook.
+- `e2e/journey.spec.js`: the required e2e checklist as one player journey, in order, through the menus with real keys. That is: load, start a level, push, ollie, land a kickflip, score changes, Bolts increase from the trick, buy with enough Bolts, balance drops by the price, equip, preview updates, quest completed, reward granted once (including across a new session and a reload).
+- `e2e/save.spec.js`: the schema v1 fixture boots the real game, migrates, and is written back as schema 3.
+- `e2e/gamepad.spec.js`: gamepad mapping through a scripted `navigator.getGamepads()` pad.
+- First-person camera mode (BUGS.md #23). C cycles follow → close → first person → top-down; the rider's body is hidden in first person.
+- `e2e/maps.spec.js` › "switching maps releases GPU resources" (regression test for BUGS.md #22).
+- README.md (setup, controls, rules, adding maps, levels and data, tests) and VERIFICATION.md (feature / how tested / result / notes, plus what could not be verified).
+
+Fixed
+- BUGS.md #22: every new session leaked GPU textures (ground texture and shadow map not disposed).
+- BUGS.md #23: no true first-person camera.
+- Corrected the milestone 7 entry: the catalog has 48 items, not 49.
+
+Verified
+- `npm run lint` → clean (no errors or warnings). A one-off stricter ESLint pass gave 18 warnings; on review none were bugs (see VERIFICATION.md).
+- `npm test` → 208 tests, 208 pass (new: two first-person camera tests and a camera-mode save test).
+- `npm run check:maps` → 5/5 maps pass.
+- `npm run test:e2e` → 49 passed (new: journey, v1 save migration, gamepad, camera modes, GPU release on map switch).
+- `npm run test:soak` → 4 passed in 8.3 min:
+  - 300 s across all maps: 0 errors and 0 warnings; 0 out-of-bounds ticks and 0 safety resets; GPU geometries and textures equal to the scene's after every map; heap 4.98 → 6.34 MB.
+  - 300 s in one session: heap 6.18–6.43 MB, flat after minute 1; 730 m ridden, 31 tricks, 91 bails.
+  - 42 restarts: live object counts identical.
+  - 60 s real time: 7.7 fps on SwiftShader, 0 errors.
+- The regression test for #22 fails without the fix (expected 2 textures, received 13) and passes with it.
+- Clean install: the files to be committed were copied into an empty directory; `npm install` and `npm run dev` worked there, and the game was played from the menu with no console errors.
+- A browser check while starting all five maps made 46 requests, none to an external host.
+- Screenshots: first-person view (skatepark, plaza) and the clean-install game.

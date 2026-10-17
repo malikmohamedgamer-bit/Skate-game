@@ -4,7 +4,7 @@ import { fetchJsonReader, loadGameData } from './core/data.js';
 import { createLoop } from './core/loop.js';
 import { DEFAULT_BINDINGS, ONE_HANDED_PRESETS, createInput, rebind } from './core/input.js';
 import { createAudio } from './core/audio.js';
-import { createCameraRig } from './core/camera.js';
+import { CAMERA_MODES, createCameraRig } from './core/camera.js';
 import { createSaveStore } from './core/save.js';
 import { createSession } from './game/session.js';
 import { applyEvent, createRun, creditBolts, finishRun, questEvent, tickRun } from './game/progression.js';
@@ -727,13 +727,13 @@ function notify(n) {
   }
 }
 
+const CAMERA_LABELS = { follow: 'follow', close: 'close', first: 'first person', top: 'top-down' };
 function cycleCamera() {
-  const modes = ['follow', 'close', 'top'];
-  const next = modes[(modes.indexOf(app.cameraRig.mode) + 1) % modes.length];
+  const next = CAMERA_MODES[(CAMERA_MODES.indexOf(app.cameraRig.mode) + 1) % CAMERA_MODES.length];
   app.cameraRig.mode = next;
   app.profile.settings.camera.mode = next;
   markDirty();
-  app.hud.toast(`Camera: ${next}`, 1.2);
+  app.hud.toast(`Camera: ${CAMERA_LABELS[next]}`, 1.2);
 }
 
 /** Countdown display: rounds up, so a 90 s limit shows 1:30 until a full second has passed. */
@@ -802,6 +802,7 @@ function render(_alpha, frameSeconds) {
   landedThisFrame = false;
   const travelYaw = s.grind ? s.grind.travelYaw : lenXZ(b.vel) > 1 ? yawOf(b.vel) : b.yaw;
   const cam = app.profile.settings.camera;
+  app.rider.setFirstPerson(app.cameraRig.mode === 'first' && !app.debugCam);
   app.cameraRig.update(fdt, s.world, { pos: b.pos, travelYaw, speed }, {
     smoothing: cam.smoothing,
     shake: cam.shake,
@@ -860,14 +861,25 @@ window.__game = {
       saveStatus: app.saveStatus,
       score: sc ? { score: sc.score, combo: sc.combo, multiplier: comboMultiplier(sc.combo), tricks: sc.tricks } : null,
       rider: b
-        ? { pos: { ...b.pos }, vel: { ...b.vel }, speed: speedOf(b), yaw: b.yaw, state: b.state, grounded: b.grounded, stance: b.stance }
+        ? {
+            pos: { ...b.pos },
+            vel: { ...b.vel },
+            speed: speedOf(b),
+            yaw: b.yaw,
+            state: b.state,
+            grounded: b.grounded,
+            stance: b.stance,
+            safetyResets: b.safetyResets,
+          }
         : null,
+      bounds: s ? { ...s.world.bounds } : null,
       lastTrick: s?.lastTrick || null,
       air: s?.air ? { pitchDeg: s.air.pitchDeg, yawDeg: s.air.yawDeg, boardYawDeg: s.air.boardYawDeg, grab: s.air.grab, airTime: s.air.airTime } : null,
       grind: s?.grind ? { name: s.grind.name, balance: s.grind.balance, time: s.grind.time } : null,
       liveTrick: s ? s.currentTrickText() : null,
       trickText: app.hud?.trickText || '',
       camera: app.cameraRig?.state,
+      riderBodyVisible: app.rider ? app.rider.bodyVisible : null,
       stats: s ? { ...s.stats2 } : null,
       pickups: s ? s.pickups.map((p) => ({ id: p.id, taken: p.taken, x: p.x, y: p.y, z: p.z })) : [],
       mapId: s ? s.map.id : null,
@@ -909,6 +921,37 @@ window.__game = {
       wrap.appendChild(fig);
     }
     document.body.appendChild(wrap);
+  },
+  /** GPU-side resources held by the renderer (leak checks in the soak test). */
+  renderInfo() {
+    const i = app.renderer.info;
+    return { geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs ? i.programs.length : 0, calls: i.render.calls };
+  },
+  /**
+   * Leak audit: draw everything once (hidden objects shown, no frustum culling) so every object
+   * in the scene is uploaded, then compare the renderer's live GPU resources with what the scene
+   * references. Anything the renderer holds beyond that belongs to a scene that was not disposed.
+   */
+  gpuAudit() {
+    const scene = app.sceneInfo.scene;
+    const culled = [];
+    const hidden = [];
+    const geos = new Set();
+    const texs = new Set();
+    scene.traverse((o) => {
+      if (o.frustumCulled) culled.push(o);
+      if (!o.visible) hidden.push(o);
+      o.frustumCulled = false;
+      o.visible = true;
+      if (o.geometry) geos.add(o.geometry);
+      for (const m of o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []) if (m.map) texs.add(m.map);
+      if (o.isLight && o.castShadow) texs.add(o);
+    });
+    app.renderer.render(scene, app.camera);
+    for (const o of culled) o.frustumCulled = true;
+    for (const o of hidden) o.visible = false;
+    const m = app.renderer.info.memory;
+    return { geometries: m.geometries, textures: m.textures, sceneGeometries: geos.size, sceneTextures: texs.size, meshes: scene.children.length };
   },
   a11y() {
     return {

@@ -14,6 +14,7 @@ import {
   normalizeSave,
 } from '../src/core/save.js';
 import { STARTING_BOLTS } from '../src/game/economy.js';
+import { CAMERA_MODES } from '../src/core/camera.js';
 
 const fixture = (name) => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8');
 
@@ -128,4 +129,15 @@ test('storage that throws (private mode / quota) never crashes the game', () => 
   assert.equal(store.load().status, 'new');
   assert.equal(store.write(defaultSave()), false);
   assert.ok(store.lastWriteError);
+});
+
+test('every camera mode survives a save round trip; unknown modes fall back to follow', () => {
+  for (const mode of CAMERA_MODES) {
+    const d = defaultSave(1);
+    d.settings.camera.mode = mode;
+    assert.equal(normalizeSave(d, 1).settings.camera.mode, mode);
+  }
+  const d = defaultSave(1);
+  d.settings.camera.mode = 'drone';
+  assert.equal(normalizeSave(d, 1).settings.camera.mode, 'follow');
 });

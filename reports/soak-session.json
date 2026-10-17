@@ -1,0 +1,69 @@
+{
+  "seed": 9002,
+  "simSeconds": 300,
+  "wallSeconds": 219,
+  "heapMB": [
+    6.18,
+    6.38,
+    6.29,
+    6.43,
+    6.41
+  ],
+  "gpu": [
+    {
+      "geometries": 149,
+      "textures": 2,
+      "sceneGeometries": 149,
+      "sceneTextures": 2,
+      "meshes": 9
+    },
+    {
+      "geometries": 149,
+      "textures": 2,
+      "sceneGeometries": 149,
+      "sceneTextures": 2,
+      "meshes": 9
+    },
+    {
+      "geometries": 149,
+      "textures": 2,
+      "sceneGeometries": 149,
+      "sceneTextures": 2,
+      "meshes": 9
+    },
+    {
+      "geometries": 149,
+      "textures": 2,
+      "sceneGeometries": 149,
+      "sceneTextures": 2,
+      "meshes": 9
+    },
+    {
+      "geometries": 149,
+      "textures": 2,
+      "sceneGeometries": 149,
+      "sceneTextures": 2,
+      "meshes": 9
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "session": {
+    "mapId": "skatepark",
+    "chunks": 240,
+    "pauses": 1,
+    "respawns": 1,
+    "cameraChanges": 3,
+    "maxOutside": 0,
+    "simSeconds": 60,
+    "ticks": 18000,
+    "distance": 730,
+    "maxSpeed": 12.2,
+    "tricks": 31,
+    "bails": 91,
+    "airTime": 70,
+    "grindTime": 0.9,
+    "outOfBoundsTicks": 0,
+    "safetyResets": 0
+  }
+}

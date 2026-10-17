@@ -1,0 +1,151 @@
+{
+  "seed": 9001,
+  "simSeconds": 300,
+  "wallSeconds": 190,
+  "heapStartMB": 4.98,
+  "heapEndMB": 6.34,
+  "heapGrowthMB": 1.36,
+  "gpuStart": {
+    "geometries": 84,
+    "textures": 2,
+    "sceneGeometries": 84,
+    "sceneTextures": 2,
+    "meshes": 9
+  },
+  "gpuEnd": {
+    "geometries": 84,
+    "textures": 2,
+    "sceneGeometries": 84,
+    "sceneTextures": 2,
+    "meshes": 9
+  },
+  "errors": [],
+  "warnings": [],
+  "maps": [
+    {
+      "mapId": "training",
+      "chunks": 240,
+      "pauses": 1,
+      "respawns": 1,
+      "cameraChanges": 3,
+      "maxOutside": 0,
+      "simSeconds": 60,
+      "ticks": 3600,
+      "distance": 95,
+      "maxSpeed": 9.15,
+      "tricks": 2,
+      "bails": 20,
+      "airTime": 12.6,
+      "grindTime": 0.4,
+      "outOfBoundsTicks": 0,
+      "safetyResets": 0,
+      "gpu": {
+        "geometries": 84,
+        "textures": 2,
+        "sceneGeometries": 84,
+        "sceneTextures": 2,
+        "meshes": 9
+      }
+    },
+    {
+      "mapId": "neighborhood",
+      "chunks": 240,
+      "pauses": 1,
+      "respawns": 0,
+      "cameraChanges": 2,
+      "maxOutside": 0,
+      "simSeconds": 60,
+      "ticks": 3600,
+      "distance": 135,
+      "maxSpeed": 10.84,
+      "tricks": 4,
+      "bails": 19,
+      "airTime": 14.5,
+      "grindTime": 0,
+      "outOfBoundsTicks": 0,
+      "safetyResets": 0,
+      "gpu": {
+        "geometries": 210,
+        "textures": 2,
+        "sceneGeometries": 210,
+        "sceneTextures": 2,
+        "meshes": 9
+      }
+    },
+    {
+      "mapId": "skatepark",
+      "chunks": 240,
+      "pauses": 0,
+      "respawns": 2,
+      "cameraChanges": 2,
+      "maxOutside": 0,
+      "simSeconds": 60,
+      "ticks": 3600,
+      "distance": 102,
+      "maxSpeed": 10.27,
+      "tricks": 2,
+      "bails": 21,
+      "airTime": 14.3,
+      "grindTime": 0,
+      "outOfBoundsTicks": 0,
+      "safetyResets": 0,
+      "gpu": {
+        "geometries": 149,
+        "textures": 2,
+        "sceneGeometries": 149,
+        "sceneTextures": 2,
+        "meshes": 9
+      }
+    },
+    {
+      "mapId": "plaza",
+      "chunks": 240,
+      "pauses": 2,
+      "respawns": 0,
+      "cameraChanges": 1,
+      "maxOutside": 0,
+      "simSeconds": 60,
+      "ticks": 3600,
+      "distance": 151,
+      "maxSpeed": 12.16,
+      "tricks": 5,
+      "bails": 18,
+      "airTime": 14,
+      "grindTime": 0,
+      "outOfBoundsTicks": 0,
+      "safetyResets": 0,
+      "gpu": {
+        "geometries": 156,
+        "textures": 2,
+        "sceneGeometries": 156,
+        "sceneTextures": 2,
+        "meshes": 9
+      }
+    },
+    {
+      "mapId": "downtown",
+      "chunks": 240,
+      "pauses": 0,
+      "respawns": 2,
+      "cameraChanges": 1,
+      "maxOutside": 0,
+      "simSeconds": 60,
+      "ticks": 3600,
+      "distance": 168,
+      "maxSpeed": 12.03,
+      "tricks": 6,
+      "bails": 15,
+      "airTime": 13.6,
+      "grindTime": 0,
+      "outOfBoundsTicks": 0,
+      "safetyResets": 0,
+      "gpu": {
+        "geometries": 205,
+        "textures": 2,
+        "sceneGeometries": 205,
+        "sceneTextures": 2,
+        "meshes": 9
+      }
+    }
+  ]
+}

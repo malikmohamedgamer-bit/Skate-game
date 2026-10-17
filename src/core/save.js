@@ -236,7 +236,7 @@ function mergeSettings(def, s) {
   if (!['auto', 'on', 'off'].includes(a.touchControls)) a.touchControls = 'auto';
   out.audio.volume = Math.min(1, Math.max(0, out.audio.volume));
   out.camera.smoothing = Math.min(1, Math.max(0, out.camera.smoothing));
-  if (!['follow', 'close', 'top'].includes(out.camera.mode)) out.camera.mode = 'follow';
+  if (!['follow', 'close', 'first', 'top'].includes(out.camera.mode)) out.camera.mode = 'follow';
   return out;
 }
 

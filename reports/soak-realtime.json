@@ -1,0 +1,22 @@
+{
+  "seed": 9003,
+  "wallSeconds": 60.1,
+  "simTicks": 2164,
+  "simSeconds": 36.1,
+  "framesRendered": 462,
+  "fps": 7.7,
+  "note": "Software WebGL (SwiftShader) in headless Chromium; fps says nothing about real GPUs.",
+  "errors": [],
+  "warnings": [],
+  "stats": {
+    "maxSpeed": 8.95129856062028,
+    "distance": 54.94531658414217,
+    "outOfBounds": 0,
+    "ticks": 2171,
+    "tricks": 4,
+    "bails": 12,
+    "grindTime": 0,
+    "grindDistance": 0,
+    "airTime": 9.683333333333335
+  }
+}

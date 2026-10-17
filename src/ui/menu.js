@@ -327,7 +327,8 @@ export function showSettings(sm, { settings, bindings, inGame = false }, actions
       <fieldset><legend>Camera</legend>
         ${select('set-cam', 'Camera view', c.mode, [
           ['follow', 'Third-person follow'],
-          ['close', 'Close (first-person-ish)'],
+          ['close', 'Close (over the shoulder)'],
+          ['first', 'First person'],
           ['top', 'Top-down'],
         ])}
         ${range('set-smooth', 'Camera smoothing', Math.round(c.smoothing * 100), 0, 100, 10, c.smoothing <= 0.001 ? 'Off' : `${Math.round(c.smoothing * 100)}%`)}

@@ -1,0 +1,32 @@
+{
+  "afterWarmup": {
+    "Object3D": 315,
+    "BufferGeometry": 181,
+    "Material": 49,
+    "Texture": 20,
+    "Array": 4397,
+    "Map": 48,
+    "HTMLElement": 88,
+    "heapMB": 6
+  },
+  "after30": {
+    "Object3D": 315,
+    "BufferGeometry": 181,
+    "Material": 49,
+    "Texture": 20,
+    "Array": 4395,
+    "Map": 48,
+    "HTMLElement": 88,
+    "heapMB": 6.25
+  },
+  "after51": {
+    "Object3D": 315,
+    "BufferGeometry": 181,
+    "Material": 49,
+    "Texture": 20,
+    "Array": 4395,
+    "Map": 48,
+    "HTMLElement": 88,
+    "heapMB": 6.32
+  }
+}
