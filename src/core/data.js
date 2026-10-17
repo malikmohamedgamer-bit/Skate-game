@@ -7,6 +7,7 @@ export const DATA_FILES = {
   physics: 'data/physics.json',
   vehicles: 'data/vehicles.json',
   tricks: 'data/tricks.json',
+  levels: 'data/levels.json',
 };
 
 export async function loadGameData(readJson) {
@@ -14,6 +15,7 @@ export async function loadGameData(readJson) {
   const entries = Object.entries(DATA_FILES);
   const values = await Promise.all(entries.map(([, p]) => readJson(p)));
   entries.forEach(([k], i) => (out[k] = values[i]));
+  out.levels = out.levels.levels;
   const index = await readJson('world/maps/index.json');
   const maps = await Promise.all(index.maps.map((id) => readJson(`world/maps/${id}.json`)));
   out.maps = {};

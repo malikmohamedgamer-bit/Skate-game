@@ -15,6 +15,10 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 8 | Fixed | Unit test (M3) |
 | 9 | Fixed | Design review of downtown map (M4) |
 | 10 | Fixed | Unit test (M4) |
+| 11 | Fixed | Level bot (M5) |
+| 12 | Fixed | Level bot (M5) |
+| 13 | Fixed | Level bot (M5) |
+| 14 | Fixed | E2E test (M5) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -75,3 +79,27 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** map authoring oversight.
 - **Fix:** added jersey barriers and a planter to the skatepark; a loading dock with a 6-step stair set and handrails to downtown.
 - **Proof:** `tests/maps.test.js` › 'map "…" has bounds, ground, spawns and ramps, rails, benches, stairs, barriers and pickups' for all four maps; `npm run check:maps` still passes (both new handrails grinded in simulation).
+
+## 11. Bowls were inescapable
+- **Symptom:** the level bot (and a player) could drop into a bowl but never get out: every attempt up the near-vertical wall became a vert air back into the bowl.
+- **Cause:** bowl walls are vert transitions on every side and there was no lower exit.
+- **Fix:** each skatepark bowl has an exit bank (a kicker from the bowl floor up to the coping) in `src/world/maps/skatepark.json`.
+- **Proof:** `tests/level-feasibility.test.js` › level s3 "Bowl Hunter" (bot rides into and out of both bowls) and `npm run check:maps` (banks launched) — pass.
+
+## 12. Vert airs taken at an angle bailed as "landed sideways"
+- **Symptom:** carving up a quarter pipe or bowl wall diagonally and coming straight back down bailed.
+- **Cause:** the automatic vert 180 turned the board to the reverse of the takeoff heading, but a diagonal vert air keeps its sideways velocity, so the landing line is mirrored, not reversed; the heading check then failed.
+- **Fix:** on vert landings only the player's own rotation is judged; the board follows the landing line (`ignoreHeading` for vert in `session.handleLanding`; fakie decided by spin parity).
+- **Proof:** level bot runs n2 and s3 no longer bail; `tests/physics.test.js` › quarter pipe vert test still passes.
+
+## 13. Slow vert hops on a bowl wall bailed as "landed on a tilt"
+- **Symptom:** repeated "landed on a tilt" bails while pushing into a bowl wall.
+- **Cause:** with almost no horizontal speed, the tilt check fell back to the board facing, which can be across the wall.
+- **Fix:** vert landings measure tilt along the surface fall line and settle the heading down it.
+- **Proof:** level bot run s3 has 0 bails; `tests/level-feasibility.test.js` passes.
+
+## 14. Level countdown showed 1:29 at the start of a 90 s level
+- **Symptom:** the timer dropped a second immediately.
+- **Cause:** remaining time was floored (89.95 s → 1:29).
+- **Fix:** countdowns round up (`formatTime` in `src/main.js`).
+- **Proof:** `e2e/levels.spec.js` › "play a level from the menu ..." asserts the HUD shows 1:30 — passes.

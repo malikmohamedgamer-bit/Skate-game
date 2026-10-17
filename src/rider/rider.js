@@ -380,6 +380,7 @@ const tmpX = new THREE.Vector3();
 const tmpM = new THREE.Matrix4();
 const tmpQ = new THREE.Quaternion();
 const X_AXIS = new THREE.Vector3(1, 0, 0);
+const TAU = Math.PI * 2;
 
 function setPose(rider, kind, pose) {
   const { hips, torso, arms, legs, head } = rider.userData;
@@ -440,6 +441,7 @@ export function createRiderModel(lookIn) {
   let mesh = buildVehicleMesh(lookIn);
   orient.add(mesh);
   const smoothedUp = new THREE.Vector3(0, 1, 0);
+  let smoothYaw = null;
   let crouch = 0.15;
   let landT = 0;
   let pushT = 0;
@@ -510,7 +512,13 @@ export function createRiderModel(lookIn) {
       let yaw = view.state === 'air' ? view.airYaw : view.yaw;
       if (view.state === 'grind' && view.grind) yaw = view.grind.boardYaw;
       // Fakie: board nose points backwards (skateboard), rider still faces travel.
-      const visualYaw = yaw + (view.stance < 0 && view.state !== 'air' && kind === 'skateboard' ? Math.PI : 0);
+      const targetYaw = yaw + (view.stance < 0 && view.state !== 'air' && kind === 'skateboard' ? Math.PI : 0);
+      // Smooth the heading so landings and reverts never snap (but stay responsive).
+      if (smoothYaw === null) smoothYaw = targetYaw;
+      let dYaw = (((targetYaw - smoothYaw) % TAU) + TAU * 1.5) % TAU - Math.PI;
+      if (Math.abs(dYaw) > 2.6 && view.state === 'air') dYaw = 0.0; // never spin the long way mid-air
+      smoothYaw += dYaw * (view.state === 'air' ? 1 : 1 - Math.exp(-dt * 22));
+      const visualYaw = smoothYaw;
       tmpF.set(Math.sin(visualYaw), 0, Math.cos(visualYaw));
       tmpF.addScaledVector(smoothedUp, -tmpF.dot(smoothedUp)).normalize();
       tmpX.crossVectors(smoothedUp, tmpF).normalize();

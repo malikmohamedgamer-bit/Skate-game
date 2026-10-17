@@ -1,10 +1,13 @@
 // Milestone 4: every map loads and renders in the browser; pickups pay Bolts.
 import { test, expect } from '@playwright/test';
-import { openGame, state, advance, expectNoErrors } from './helpers.js';
+import { openGame, seedSave, saveWith, state, advance, expectNoErrors } from './helpers.js';
 
 for (const mapId of ['training', 'neighborhood', 'skatepark', 'plaza', 'downtown']) {
   test(`map "${mapId}" loads from the menu, renders and is rideable`, async ({ page }) => {
-    const errors = await openGame(page);
+    // Enough stars to unlock every map.
+    await seedSave(page, saveWith({ levels: { n1: 3, n2: 3, n3: 3, n4: 3 } }));
+    const errors = await openGame(page, { clearSave: false });
+    await page.getByRole('button', { name: 'Free roam' }).click();
     await page.locator(`#map-list [data-map="${mapId}"]`).click();
     await page.evaluate(() => window.__game.setManual(true));
     const s0 = await state(page);

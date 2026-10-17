@@ -1,0 +1,268 @@
+{
+  "_comment": "Levels. objective.type: score | tricks | pickups | timeTrial | grindDistance. stars = thresholds for 1, 2, 3 stars (for timeTrial: max seconds, lower is better). unlock: { totalStars } (total stars needed) and/or { level, levelStars } (that level with at least levelStars stars, default 1). pickups: 'all' | 'none' | [ids]. Adding a level here needs no code changes.",
+  "levels": [
+    {
+      "id": "n1",
+      "name": "First Push",
+      "map": "neighborhood",
+      "spawn": "main",
+      "description": "Score points on Maple Street. Ollie, flip and spin to build combos.",
+      "objective": {
+        "type": "score",
+        "stars": [1500, 6000, 15000]
+      },
+      "timeLimit": 90,
+      "pickups": "none",
+      "unlock": {}
+    },
+    {
+      "id": "n2",
+      "name": "Bolt Run",
+      "map": "neighborhood",
+      "spawn": "main",
+      "description": "Collect the bolts scattered around the street. Some need an ollie or a ramp.",
+      "objective": {
+        "type": "pickups",
+        "stars": [6, 10, 13]
+      },
+      "timeLimit": 150,
+      "pickups": "all",
+      "unlock": {
+        "level": "n1",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Curb Appeal",
+      "map": "neighborhood",
+      "spawn": "main",
+      "description": "Land clean tricks. Any landed trick or grind counts.",
+      "objective": {
+        "type": "tricks",
+        "stars": [5, 12, 20]
+      },
+      "timeLimit": 90,
+      "pickups": "none",
+      "unlock": {
+        "level": "n2",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Paperboy Sprint",
+      "map": "neighborhood",
+      "spawn": "main",
+      "description": "Race through the checkpoints: east end of the cross street, then the cul-de-sac.",
+      "objective": {
+        "type": "timeTrial",
+        "checkpoints": ["n-cp-cross-e", "n-cp-north"],
+        "stars": [44, 30, 23]
+      },
+      "timeLimit": 44,
+      "pickups": "none",
+      "unlock": {
+        "level": "n3",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "s1",
+      "name": "Park Rat",
+      "map": "skatepark",
+      "spawn": "main",
+      "description": "Show the locals what you have got. Bowls and the half pipe give big airs.",
+      "objective": {
+        "type": "score",
+        "stars": [4000, 12000, 30000]
+      },
+      "timeLimit": 120,
+      "pickups": "none",
+      "unlock": {}
+    },
+    {
+      "id": "s2",
+      "name": "Rail Yard",
+      "map": "skatepark",
+      "spawn": "main",
+      "description": "Grind rails, ledges and benches. Total grind distance counts.",
+      "objective": {
+        "type": "grindDistance",
+        "stars": [20, 40, 70]
+      },
+      "timeLimit": 120,
+      "pickups": "none",
+      "unlock": {
+        "level": "s1",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "s3",
+      "name": "Bowl Hunter",
+      "map": "skatepark",
+      "spawn": "main",
+      "description": "Bolts hide in the bowls, over the kickers and along the rails.",
+      "objective": {
+        "type": "pickups",
+        "stars": [8, 12, 15]
+      },
+      "timeLimit": 150,
+      "pickups": "all",
+      "unlock": {
+        "level": "s2",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "s4",
+      "name": "Line Up",
+      "map": "skatepark",
+      "spawn": "main",
+      "description": "Checkpoint run: the stair set, the north quarter pipe, then the big bowl.",
+      "objective": {
+        "type": "timeTrial",
+        "checkpoints": ["s-cp-stairs", "s-cp-north", "s-cp-bowl"],
+        "stars": [50, 36, 27]
+      },
+      "timeLimit": 50,
+      "pickups": "none",
+      "unlock": {
+        "level": "s3",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "p1",
+      "name": "Step Up",
+      "map": "plaza",
+      "spawn": "main",
+      "description": "Land clean tricks around the plaza stairs and benches.",
+      "objective": {
+        "type": "tricks",
+        "stars": [8, 16, 25]
+      },
+      "timeLimit": 120,
+      "pickups": "none",
+      "unlock": {}
+    },
+    {
+      "id": "p2",
+      "name": "Handrail Hero",
+      "map": "plaza",
+      "spawn": "terrace",
+      "description": "Grind the handrails, ledges and benches of the plaza.",
+      "objective": {
+        "type": "grindDistance",
+        "stars": [25, 50, 80]
+      },
+      "timeLimit": 150,
+      "pickups": "none",
+      "unlock": {
+        "level": "p1",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "p3",
+      "name": "Plaza Sweep",
+      "map": "plaza",
+      "spawn": "main",
+      "description": "Collect the bolts on benches, ledges and the terrace.",
+      "objective": {
+        "type": "pickups",
+        "stars": [7, 11, 14]
+      },
+      "timeLimit": 150,
+      "pickups": "all",
+      "unlock": {
+        "level": "p2",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "p4",
+      "name": "Plaza Masters",
+      "map": "plaza",
+      "spawn": "main",
+      "description": "A big score attack. Chain grinds and flips into long combos.",
+      "objective": {
+        "type": "score",
+        "stars": [8000, 20000, 45000]
+      },
+      "timeLimit": 120,
+      "pickups": "none",
+      "unlock": {
+        "level": "p3",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "d1",
+      "name": "Bomb the Hill",
+      "map": "downtown",
+      "spawn": "main",
+      "description": "Race from uptown down the hill: terrace checkpoint, then the plaza at the bottom.",
+      "objective": {
+        "type": "timeTrial",
+        "checkpoints": ["d-cp-terrace", "d-cp-bottom"],
+        "stars": [24, 16, 12]
+      },
+      "timeLimit": 24,
+      "pickups": "none",
+      "unlock": {}
+    },
+    {
+      "id": "d2",
+      "name": "Downtown Hustle",
+      "map": "downtown",
+      "spawn": "main",
+      "description": "Use the hill's speed for huge airs. Score attack.",
+      "objective": {
+        "type": "score",
+        "stars": [10000, 25000, 55000]
+      },
+      "timeLimit": 150,
+      "pickups": "none",
+      "unlock": {
+        "level": "d1",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "d3",
+      "name": "Uptown Funk",
+      "map": "downtown",
+      "spawn": "main",
+      "description": "Every bolt in downtown, from the uptown ledges to the loading dock.",
+      "objective": {
+        "type": "pickups",
+        "stars": [8, 11, 13]
+      },
+      "timeLimit": 180,
+      "pickups": "all",
+      "unlock": {
+        "level": "d2",
+        "levelStars": 1
+      }
+    },
+    {
+      "id": "d4",
+      "name": "Grind City",
+      "map": "downtown",
+      "spawn": "bottom",
+      "description": "Grind the city: rails, ledges, benches and the dock handrails.",
+      "objective": {
+        "type": "grindDistance",
+        "stars": [25, 55, 90]
+      },
+      "timeLimit": 180,
+      "pickups": "none",
+      "unlock": {
+        "level": "d3",
+        "levelStars": 1
+      }
+    }
+  ]
+}

@@ -444,3 +444,52 @@ export function buildPickupMeshes(pickups, { palette = PALETTES.default } = {}) 
     },
   };
 }
+
+/** Checkpoint rings for time trials. Returns { group, setActive(index) }. */
+export function buildCheckpointMeshes(world, checkpoints, { palette = PALETTES.default } = {}) {
+  const group = new THREE.Group();
+  group.name = 'checkpoints';
+  const items = [];
+  const ringGeo = new THREE.TorusGeometry(1, 0.08, 8, 40);
+  const beamGeo = new THREE.CylinderGeometry(0.12, 0.12, 12, 8, 1, true);
+  checkpoints.forEach((cp, i) => {
+    const g = new THREE.Group();
+    const y = groundAt(world, cp.x, cp.z, Infinity).h;
+    g.position.set(cp.x, y, cp.z);
+    const mat = new THREE.MeshBasicMaterial({ color: palette.checkpoint, transparent: true, opacity: 0.85 });
+    const ring = new THREE.Mesh(ringGeo, mat);
+    ring.scale.setScalar(cp.radius);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.1;
+    const beamMat = new THREE.MeshBasicMaterial({ color: palette.checkpoint, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
+    const beam = new THREE.Mesh(beamGeo, beamMat);
+    beam.position.y = 6;
+    // A numbered tick on the beam: i + 1 small rings stacked, so order is not shown by color alone.
+    for (let k = 0; k <= i; k++) {
+      const tick = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.06, 6, 16), mat);
+      tick.rotation.x = Math.PI / 2;
+      tick.position.y = 2.5 + k * 0.6;
+      g.add(tick);
+    }
+    g.add(ring, beam);
+    group.add(g);
+    items.push({ g, mat, beamMat });
+  });
+  return {
+    group,
+    setActive(index) {
+      items.forEach((it, i) => {
+        it.g.visible = i >= index;
+        const active = i === index;
+        it.mat.opacity = active ? 0.95 : 0.35;
+        it.beamMat.opacity = active ? 0.45 : 0.12;
+      });
+    },
+    dispose() {
+      group.traverse((o) => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) o.material.dispose();
+      });
+    },
+  };
+}

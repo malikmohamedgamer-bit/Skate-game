@@ -76,3 +76,22 @@ Verified
 - Screenshots of all four maps checked (overview + spawn view).
 - Bugs found and fixed: BUGS.md #9, #10.
 - `npx eslint .` → clean.
+
+## Milestone 5 — Levels
+
+Added
+- `src/data/levels.json`: 16 levels (4 per themed map) using all five objective types: score, trick count, collect pickups, time trial through checkpoints, grind distance. Each has 1–3 star thresholds, a time limit, a spawn, a pickup set and unlock rules (`totalStars`, `level` + `levelStars`). Adding a level is data-only.
+- `src/game/levels.js` (pure): validation with readable errors, star rating (time trials: lower is better), level run state machine (ends at the time limit or at 3 stars; checkpoints in order), objective text, unlock state with human-readable reasons, map unlocking by total stars (skatepark 3, plaza 7, downtown 12), result recording (best stars/score/time), next level.
+- Menus (`src/ui/menu.js`): main menu, level select grouped by map (lock icon + written reason), free roam with locked maps, pause (resume / retry / settings / controls / quit), results (stars as icons + "n of 3 stars" text, value, Bolts from the run and the level reward, next/retry/levels/menu), how-to-play with the live key bindings. Dialog roles, focus trap, Escape = back.
+- Level HUD: objective, progress toward the next star, countdown (rounded up), next-checkpoint distance; checkpoint rings with numbered ticks and beams.
+- Level rewards: 25 Bolts base + first-time star bonuses; progress saved.
+- Skatepark bowls got exit banks (BUGS.md #11). Vert landings judged on player rotation only (#12, #13).
+- `tests/bot.js` + `tests/level-plans.js`: a scripted bot that plays each level through the real simulation with normal inputs.
+
+Verified
+- `npm test` → 165 tests, 165 pass, including `tests/levels.test.js` (12) and `tests/level-feasibility.test.js` (19): **every level earns ≥ 1 star by bot play**, the three time trials also on the scooter.
+- `npx playwright test` → 23 passed. New: play a level from the menu (objective HUD, Escape pause, Retry resets time, Quit to menu); a locked level explains why and does not start; completing First Push shows stars, the level reward, saves progress and "Next: Bolt Run" starts it; failing a time trial shows 0 stars + Retry; **pause/retry/quit checked in all 16 levels**.
+- `npm run check:maps` → 5/5 maps pass after the bowl banks.
+- Screenshots: level select (locks + reasons), level HUD, time-trial checkpoints, results.
+- Bugs found and fixed: BUGS.md #11–#14.
+- `npx eslint .` → clean.

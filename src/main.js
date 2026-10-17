@@ -6,12 +6,23 @@ import { createInput } from './core/input.js';
 import { createCameraRig } from './core/camera.js';
 import { createSaveStore } from './core/save.js';
 import { createSession } from './game/session.js';
-import { applyEvent, createRun, finishRun, tickRun } from './game/progression.js';
+import { applyEvent, createRun, creditBolts, finishRun, tickRun } from './game/progression.js';
 import { comboMultiplier } from './game/scoring.js';
+import { levelReward, runTotal } from './game/economy.js';
+import {
+  createLevelRun,
+  levelPickupIds,
+  levelUnlockState,
+  nextLevel,
+  objectiveText,
+  recordLevelResult,
+  updateLevelRun,
+} from './game/levels.js';
 import { buildMapScene } from './world/scene.js';
-import { buildObjectMeshes, buildPickupMeshes, choosePalette } from './world/objects-mesh.js';
+import { buildCheckpointMeshes, buildObjectMeshes, buildPickupMeshes, choosePalette } from './world/objects-mesh.js';
 import { createRiderModel } from './rider/rider.js';
 import { createHud } from './ui/hud.js';
+import { createScreenManager, esc, showFreeRoam, showHelp, showLevelSelect, showMainMenu, showPause, showResults } from './ui/menu.js';
 import { speedOf } from './physics/body.js';
 import { lenXZ, yawOf } from './physics/math.js';
 
@@ -24,12 +35,15 @@ const app = {
   screen: 'boot',
   session: null,
   run: null,
+  level: null,
+  levelRun: null,
   sceneInfo: null,
   rider: null,
   hud: null,
   dirty: false,
   saveTimer: 0,
   errors: [],
+  lastResult: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -57,6 +71,7 @@ async function boot() {
     showBootError('Game data failed to load. Please reload the page.', err);
     return;
   }
+  app.levelsById = Object.fromEntries(app.data.levels.map((l) => [l.id, l]));
 
   app.store = createSaveStore();
   const loaded = app.store.load();
@@ -69,6 +84,7 @@ async function boot() {
     if (a === 'pause') onPauseKey();
   });
 
+  app.screens = createScreenManager($('#screens'));
   app.hud = createHud($('#hud'));
   app.hud.onPause(() => pause());
   app.hud.setBolts(app.profile.bolts);
@@ -84,7 +100,7 @@ async function boot() {
   window.addEventListener('pagehide', flushSave);
   resize();
   $('#boot').hidden = true;
-  showTitle();
+  go('menu');
   app.loop.start();
 }
 
@@ -104,6 +120,14 @@ function resize() {
   app.camera.updateProjectionMatrix();
 }
 
+/** Screen reader announcement (polite live region). */
+function announce(text) {
+  const el = $('#sr-polite');
+  el.textContent = '';
+  // A separate task so repeated identical messages are re-announced.
+  setTimeout(() => (el.textContent = text), 30);
+}
+
 // ---------------------------------------------------------------------------
 // Saving
 // ---------------------------------------------------------------------------
@@ -116,7 +140,7 @@ function flushSave() {
 }
 
 // ---------------------------------------------------------------------------
-// Screens
+// Screen routing
 // ---------------------------------------------------------------------------
 function setScreen(name) {
   app.screen = name;
@@ -125,82 +149,115 @@ function setScreen(name) {
   if (app.loop) app.loop.setPaused(name !== 'play');
 }
 
-function showTitle() {
-  endSession();
+const ctx = () => ({ profile: app.profile, data: app.data });
+
+function go(name) {
+  if (name !== 'pause-settings' && name !== 'pause-help') endSession();
   setScreen('menu');
-  $('#screens').innerHTML = `
-    <div class="screen" role="dialog" aria-modal="true" aria-labelledby="title-h">
-      <div class="panel narrow">
-        <h1 id="title-h" class="title"><span class="bolt-mark" aria-hidden="true">⚡</span> Bolt Skate</h1>
-        <p class="subtitle">Skate and scoot through the streets.</p>
-        <p><span aria-hidden="true">⚡</span> <span class="bolts" id="menu-bolts">${app.profile.bolts}</span> Bolts</p>
-        <h2>Free roam</h2>
-        <ul class="menu-list" id="map-list">
-          ${app.data.mapOrder
-            .map((id, i) => `<li><button class="btn${i === 0 ? ' primary' : ''}" data-map="${id}"><span class="icon" aria-hidden="true">▶</span>${app.data.maps[id].name}</button></li>`)
-            .join('')}
-        </ul>
-      </div>
-    </div>`;
-  for (const b of document.querySelectorAll('#map-list [data-map]')) b.addEventListener('click', () => startSession({ mapId: b.dataset.map }));
-  document.querySelector('#map-list button').focus();
+  const back = () => go('menu');
+  switch (name) {
+    case 'menu':
+      showMainMenu(app.screens, ctx(), { go });
+      break;
+    case 'levels':
+      showLevelSelect(app.screens, ctx(), { back, startLevel, announce });
+      break;
+    case 'free':
+      showFreeRoam(app.screens, ctx(), { back, startFree: (mapId) => startSession({ mapId }), announce });
+      break;
+    case 'help':
+      showHelp(app.screens, { bindings: app.input.bindings }, { back });
+      break;
+    default:
+      // Quests, shop and settings screens are added in later milestones.
+      app.screens.show({ id: name, title: esc(name[0].toUpperCase() + name.slice(1)), onBack: back, narrow: true, html: '<p>Coming soon.</p>' });
+  }
+  app.menuScreen = name;
 }
 
 function onPauseKey() {
   if (app.screen === 'play') pause();
-  else if (app.screen === 'pause') resume();
+  else if (app.screen === 'pause') {
+    // In a pause sub-screen (settings, controls) Escape goes back to the pause menu.
+    if (app.screens.current && app.screens.current.id !== 'screen-pause') app.screens.back();
+    else resume();
+  } else if (app.screen === 'menu' || app.screen === 'results') app.screens.back();
 }
 
 function pause() {
   if (app.screen !== 'play') return;
   setScreen('pause');
   flushSave();
-  $('#screens').innerHTML = `
-    <div class="screen" role="dialog" aria-modal="true" aria-labelledby="pause-h">
-      <div class="panel narrow"><h2 id="pause-h">Paused</h2>
-        <ul class="menu-list">
-          <li><button class="btn primary" id="btn-resume">Resume</button></li>
-          <li><button class="btn" id="btn-retry">Restart run</button></li>
-          <li><button class="btn" id="btn-quit">Quit to menu</button></li>
-        </ul></div></div>`;
-  $('#btn-resume').addEventListener('click', resume);
-  $('#btn-retry').addEventListener('click', () => startSession(app.lastStart));
-  $('#btn-quit').addEventListener('click', showTitle);
-  $('#btn-resume').focus();
+  showPause(app.screens, { level: app.level }, {
+    resume,
+    retry: () => (app.level ? startLevel(app.level.id) : startSession(app.lastStart)),
+    settings: () => app.screens.show({ id: 'pause-settings', title: 'Settings', narrow: true, onBack: pauseMenu, html: '<p>Coming soon.</p>' }),
+    help: () => showHelp(app.screens, { bindings: app.input.bindings }, { back: pauseMenu }),
+    quit: () => go('menu'),
+  });
+}
+function pauseMenu() {
+  setScreen('play');
+  pause();
 }
 
 function resume() {
   if (app.screen !== 'pause') return;
-  $('#screens').innerHTML = '';
+  app.screens.close();
   app.input.reset();
   setScreen('play');
 }
 
 // ---------------------------------------------------------------------------
-// Sessions
+// Sessions and levels
 // ---------------------------------------------------------------------------
+function startLevel(levelId) {
+  const level = app.levelsById[levelId];
+  if (!level) return;
+  const st = levelUnlockState(level, app.data.maps, app.profile.levels, app.levelsById);
+  if (!st.unlocked) {
+    announce(st.reason);
+    return;
+  }
+  startSession({ mapId: level.map, levelId, spawnId: level.spawn || null });
+}
+
 function startSession({ mapId, levelId = null, spawnId = null }) {
   endSession();
   app.lastStart = { mapId, levelId, spawnId };
+  const level = levelId ? app.levelsById[levelId] : null;
   const vehicle = app.profile.equipped.vehicle || 'skateboard';
   const a11y = app.profile.settings.a11y;
+  const map = app.data.maps[mapId];
+  const pickupIds = level ? new Set(levelPickupIds(level, map)) : null;
   const session = createSession({
     data: app.data,
     mapId,
     vehicle,
     spawnId,
     settings: { forgivingLandings: a11y.forgivingLandings, autoPush: a11y.autoPush },
+    pickupFilter: pickupIds ? (p) => pickupIds.has(p.id) : null,
   });
   app.session = session;
-  app.run = createRun({ mode: levelId ? 'level' : 'free', mapId, levelId });
+  app.level = level;
+  app.levelRun = level ? createLevelRun(level) : null;
+  app.run = createRun({ mode: level ? 'level' : 'free', mapId, levelId });
   const palette = choosePalette({ highContrast: a11y.highContrast, colorblind: a11y.colorblind });
+  const shadows = app.profile.settings.graphics.shadows;
   app.sceneInfo = buildMapScene(session.map, session.world, {
     highContrast: a11y.highContrast,
-    shadows: app.profile.settings.graphics.shadows,
-    objectMeshes: buildObjectMeshes(session.world, { palette, shadows: app.profile.settings.graphics.shadows }),
+    shadows,
+    objectMeshes: buildObjectMeshes(session.world, { palette, shadows }),
   });
   app.pickupMeshes = buildPickupMeshes(session.pickups, { palette });
   app.sceneInfo.scene.add(app.pickupMeshes.group);
+  app.checkpointMeshes = null;
+  if (level && level.objective.type === 'timeTrial') {
+    const cps = level.objective.checkpoints.map((id) => map.checkpoints.find((c) => c.id === id));
+    app.checkpointMeshes = buildCheckpointMeshes(session.world, cps, { palette });
+    app.checkpointMeshes.setActive(0);
+    app.sceneInfo.scene.add(app.checkpointMeshes.group);
+  }
   app.rider = createRiderModel({ vehicle });
   app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
   if (!app.profile.visitedMaps.includes(mapId)) {
@@ -210,11 +267,18 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
   app.cameraRig.mode = app.profile.settings.camera.mode;
   app.cameraRig.snap();
   app.loop.setTimeScale(a11y.gameSpeed);
-  $('#screens').innerHTML = '';
+  app.screens.close();
   app.hud.setScore(0, 0, 1);
   app.hud.setBolts(app.profile.bolts);
+  app.hud.setObjective(null);
   app.input.reset();
   setScreen('play');
+  if (level) {
+    app.hud.toast(`${level.name}: go!`, 2);
+    announce(`${level.name}. ${objectiveText(level, app.levelRun).title}. ${level.timeLimit} seconds.`);
+  } else {
+    announce(`Free roam: ${map.name}.`);
+  }
 }
 
 function endSession() {
@@ -226,11 +290,47 @@ function endSession() {
   if (app.sceneInfo) app.sceneInfo.dispose();
   if (app.rider) app.rider.dispose();
   if (app.pickupMeshes) app.pickupMeshes.dispose();
+  if (app.checkpointMeshes) app.checkpointMeshes.dispose();
   app.pickupMeshes = null;
+  app.checkpointMeshes = null;
   app.sceneInfo = null;
   app.rider = null;
   app.session = null;
   app.run = null;
+  app.level = null;
+  app.levelRun = null;
+}
+
+function finishLevel() {
+  const level = app.level;
+  const lr = app.levelRun;
+  const rec = recordLevelResult(app.profile.levels, level, { stars: lr.stars, score: app.run.score.score, value: lr.value });
+  app.profile.levels = rec.levels;
+  const bolts = lr.stars > 0 ? creditBolts(app.profile, levelReward(rec.prevStars, lr.stars)) : 0;
+  const result = {
+    stars: lr.stars,
+    value: lr.value,
+    score: app.run.score.score,
+    improved: rec.improved,
+    boltsRun: runTotal(app.run.earnings),
+    boltsLevel: bolts,
+  };
+  app.lastResult = { levelId: level.id, ...result, status: lr.status };
+  markDirty();
+  endSession();
+  setScreen('results');
+  const next = nextLevel(app.data.levels, level.id);
+  const nextUnlocked = next ? levelUnlockState(next, app.data.maps, app.profile.levels, app.levelsById).unlocked : false;
+  showResults(app.screens, { level, result, next, nextUnlocked }, {
+    next: () => startLevel(next.id),
+    retry: () => startLevel(level.id),
+    levels: () => go('levels'),
+    menu: () => go('menu'),
+  });
+  announce(
+    `${lr.status === 'complete' ? 'Level complete' : 'Level failed'}: ${level.name}. ${lr.stars} of 3 stars.` +
+      (bolts ? ` Plus ${bolts} Bolts.` : ''),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -249,6 +349,32 @@ function tick(dt) {
   const inTrick = s.body.state === 'air' || s.body.state === 'grind';
   const dist = Math.hypot(s.body.pos.x - before.x, s.body.pos.z - before.z);
   for (const n of tickRun(app.run, app.profile, dt, { inTrick, speed: speedOf(s.body), distance: dist })) notify(n);
+  if (app.levelRun) {
+    const r = updateLevelRun(
+      app.levelRun,
+      app.level,
+      s.map,
+      {
+        score: app.run.score.score,
+        tricks: app.run.score.tricks,
+        pickups: app.run.pickups.length,
+        grindDistance: app.run.grindDistance,
+        pos: s.body.pos,
+      },
+      dt,
+    );
+    app.levelRun = r.run;
+    for (const e of r.events) {
+      if (e.type === 'checkpoint') {
+        if (app.checkpointMeshes) app.checkpointMeshes.setActive(e.index);
+        app.hud.toast(`Checkpoint ${e.index} of ${e.total}: ${e.time.toFixed(1)} s`, 1.5);
+        announce(`Checkpoint ${e.index} of ${e.total}`);
+      } else if (e.type === 'levelComplete' || e.type === 'levelFailed') {
+        finishLevel();
+        return;
+      }
+    }
+  }
 }
 
 function handleGameEvent(e) {
@@ -285,6 +411,32 @@ function cycleCamera() {
   app.profile.settings.camera.mode = next;
   markDirty();
   app.hud.toast(`Camera: ${next}`, 1.2);
+}
+
+/** Countdown display: rounds up, so a 90 s limit shows 1:30 until a full second has passed. */
+function formatTime(s) {
+  const t = Math.max(0, Math.ceil(s - 1e-6));
+  return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+}
+
+function updateObjectiveHud() {
+  if (!app.level || !app.levelRun) {
+    app.hud.setObjective(null);
+    return;
+  }
+  const t = objectiveText(app.level, app.levelRun);
+  let extra = '';
+  if (app.level.objective.type === 'timeTrial') {
+    const id = app.level.objective.checkpoints[app.levelRun.checkpointIndex];
+    const cp = app.session.map.checkpoints.find((c) => c.id === id);
+    if (cp) extra = ` · next ${Math.max(0, Math.round(Math.hypot(cp.x - app.session.body.pos.x, cp.z - app.session.body.pos.z) - cp.radius))} m`;
+  }
+  const low = t.remaining <= 10;
+  app.hud.setObjective(
+    `<div class="obj-title">${esc(app.level.name)} · ${esc(t.title)}</div>` +
+      `<div class="obj-progress">${esc(t.progress)}${esc(extra)}</div>` +
+      `<div class="obj-time${low ? ' low' : ''}"><span aria-hidden="true">⏱</span> ${formatTime(t.remaining)}${low ? ' left!' : ''}</div>`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -340,6 +492,7 @@ function render(_alpha, frameSeconds) {
   app.hud.setSpeed(speed);
   app.hud.setLiveTrick(s.currentTrickText());
   app.hud.setBalance(s.grind ? s.grind.balance : null);
+  updateObjectiveHud();
   app.hud.update(fdt);
   app.renderer.render(app.sceneInfo.scene, app.camera);
 }
@@ -357,10 +510,11 @@ window.__game = {
     const sc = app.run?.score;
     return {
       screen: app.screen,
+      menuScreen: app.menuScreen,
       ticks: app.loop?.ticks ?? 0,
       bolts: app.profile?.bolts ?? 0,
       saveStatus: app.saveStatus,
-      score: sc ? { score: sc.score, combo: sc.combo, multiplier: comboMultiplier(sc.combo) } : null,
+      score: sc ? { score: sc.score, combo: sc.combo, multiplier: comboMultiplier(sc.combo), tricks: sc.tricks } : null,
       rider: b
         ? { pos: { ...b.pos }, vel: { ...b.vel }, speed: speedOf(b), yaw: b.yaw, state: b.state, grounded: b.grounded, stance: b.stance }
         : null,
@@ -373,6 +527,8 @@ window.__game = {
       stats: s ? { ...s.stats2 } : null,
       pickups: s ? s.pickups.map((p) => ({ id: p.id, taken: p.taken, x: p.x, y: p.y, z: p.z })) : [],
       mapId: s ? s.map.id : null,
+      level: app.levelRun ? { ...app.levelRun } : null,
+      lastResult: app.lastResult,
       errors: app.errors.slice(),
     };
   },
@@ -381,6 +537,9 @@ window.__game = {
   },
   startFreeRoam(mapId = 'training', spawnId = null) {
     startSession({ mapId, spawnId });
+  },
+  startLevel(id) {
+    startLevel(id);
   },
   setManual(m) {
     app.loop.setManual(m);

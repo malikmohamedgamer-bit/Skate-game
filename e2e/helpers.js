@@ -1,6 +1,24 @@
 // Shared Playwright helpers.
 import { expect } from '@playwright/test';
 
+/** Seed localStorage with a save before the game boots (e.g. to unlock maps). */
+export async function seedSave(page, save) {
+  await page.addInitScript((data) => {
+    if (!sessionStorage.getItem('__e2e_seeded')) {
+      localStorage.setItem('boltskate.save', JSON.stringify(data));
+      sessionStorage.setItem('__e2e_seeded', '1');
+      sessionStorage.setItem('__e2e_cleared', '1');
+    }
+  }, save);
+}
+
+/** A minimal current-schema save with the given level stars. */
+export function saveWith({ levels = {}, bolts = 150, owned = null, extra = {} } = {}) {
+  const lv = {};
+  for (const [id, stars] of Object.entries(levels)) lv[id] = { bestStars: stars, bestScore: 0, bestTime: null, completed: stars > 0 };
+  return { schemaVersion: 3, bolts, levels: lv, ...(owned ? { owned } : {}), ...extra };
+}
+
 /** Open the game with a clean save and collect console errors. */
 export async function openGame(page, { clearSave = true, query = '' } = {}) {
   const errors = [];

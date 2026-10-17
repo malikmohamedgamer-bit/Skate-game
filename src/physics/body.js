@@ -391,6 +391,7 @@ function airContact(b, world, phys, prevPos) {
 export function settleLanding(b, { fakie }) {
   const horiz = lenXZ(b.vel);
   if (horiz > 0.3) b.yaw = yawOf(b.vel);
+  else if (b.vertAir) b.yaw = b.airYaw;
   else b.yaw = wrapAngle(b.airYaw + (fakie ? Math.PI : 0));
   if (fakie) b.stance = -b.stance;
   b.airYaw = b.yaw;

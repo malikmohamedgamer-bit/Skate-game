@@ -280,8 +280,8 @@
     "mapId": "skatepark",
     "name": "Concrete Jungle Skatepark",
     "cells": {
-      "open": 31026,
-      "reached": 31026,
+      "open": 31018,
+      "reached": 31018,
       "needsOllie": 37,
       "obstacleTops": 76,
       "percent": 100
@@ -319,6 +319,20 @@
       {
         "id": "small-bowl",
         "type": "bowl",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "big-bowl-bank",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "small-bowl-bank",
+        "type": "kicker",
         "ok": true,
         "approach": true,
         "launch": true

@@ -16,6 +16,8 @@
   "objects": [
     { "id": "big-bowl", "type": "bowl", "x": -22, "z": 18, "w": 16, "d": 14, "r": 3, "angle": 78 },
     { "id": "small-bowl", "type": "bowl", "x": 24, "z": 24, "w": 12, "d": 10, "r": 2.4, "angle": 75 },
+    { "id": "big-bowl-bank", "type": "kicker", "x": -22, "z": 14, "rot": 180, "y": -2.3765, "w": 3, "d": 6, "h": 2.3765 },
+    { "id": "small-bowl-bank", "type": "kicker", "x": 20.5, "z": 24, "rot": 270, "y": -1.7788, "w": 2.6, "d": 5, "h": 1.7788 },
     { "id": "halfpipe", "type": "halfpipe", "x": 0, "z": -30, "rot": 90, "w": 10, "r": 3, "angle": 82, "deck": 1.5, "flat": 6 },
     { "id": "north-qp", "type": "quarter", "x": 0, "z": 43.1, "w": 20, "r": 2.5, "angle": 75, "deck": 1.2 },
     { "id": "funbox", "type": "funbox", "x": 0, "z": 8, "w": 4, "d": 4, "h": 0.75, "ramp": 2.5, "rail": true },

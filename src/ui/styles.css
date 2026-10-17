@@ -475,3 +475,93 @@ body.reduced-motion *::after {
   width: 10px;
   margin-left: -5px;
 }
+
+/* ---------- Screens: shared ---------- */
+.screen-head {
+  margin-bottom: 0.4rem;
+}
+.screen-title {
+  font-size: 1.9rem;
+  margin: 0.2rem 0 0.4rem !important;
+}
+.main-menu .screen-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+}
+.back-btn {
+  padding: 0.45rem 0.8rem;
+}
+.small {
+  font-size: 0.85rem;
+}
+.stars {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  font-size: 1.15em;
+}
+.result-stars .stars {
+  font-size: 2.6rem;
+}
+.map-section {
+  margin: 0.8rem 0 1.2rem;
+}
+.map-section h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--panel-border);
+  padding-bottom: 0.3rem;
+}
+.level-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 0.7rem;
+}
+.level-card {
+  width: 100%;
+  justify-content: space-between;
+}
+.level-card.locked,
+.btn.locked {
+  opacity: 0.75;
+  border-style: dashed;
+}
+.level-desc {
+  margin: 0.25rem 0.2rem 0;
+  font-size: 0.85rem;
+}
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 1rem;
+}
+table.keys {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+table.keys th,
+table.keys td {
+  text-align: left;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--panel-border);
+}
+table.keys th {
+  font-weight: 600;
+}
+.objective .obj-title {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.objective .obj-progress {
+  font-size: 1.05rem;
+}
+.objective .obj-time {
+  font-size: 1.3rem;
+}
+.objective .obj-time.low {
+  color: var(--bad);
+}

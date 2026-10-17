@@ -104,10 +104,17 @@ export function createSession({
     }
     const t = s.air || createAirTricks();
     s.stats2.airTime += t.airTime;
+    // Vert airs: the game turns the board automatically, so only the player's own
+    // rotation is judged (spin/flip residuals); the board follows the landing line.
+    const vert = !!body.vertAir;
     const headingErrDeg = headingErrorMod180(body.airYaw, e.velYaw) / DEG;
-    const rollDeg = landingRollDeg(e.normal, body.airYaw);
+    // On a vert landing the board follows the transition's fall line.
+    const nh = Math.hypot(e.normal.x, e.normal.z);
+    const fallYaw = nh > 0.1 ? Math.atan2(e.normal.x, e.normal.z) : e.velYaw;
+    const rollDeg = landingRollDeg(e.normal, vert ? fallYaw : body.airYaw);
     const ev = evaluateLanding(t, { headingErrDeg, rollDeg, horizSpeed: lenXZ(body.vel) }, phys.landing, vstats, {
       forgiving: !!settings.forgivingLandings,
+      ignoreHeading: vert,
     });
     releaseGrab(t);
     s.air = null;
@@ -115,8 +122,9 @@ export function createSession({
       bail(body, phys, ev.reason);
       return;
     }
-    const fakie = facesBackward(body.airYaw, e.velYaw);
+    const fakie = vert ? Math.round(Math.abs(t.yawDeg) / 180) % 2 === 1 : facesBackward(body.airYaw, e.velYaw);
     // Scooters revert out of fakie automatically; skateboards ride switch/fakie.
+    if (vert && lenXZ(body.vel) < 0.3) body.airYaw = fallYaw;
     settleLanding(body, { fakie: vehicle === 'scooter' ? false : fakie });
     const trick = describeTrick(t, trickData, vehicle, { minAirTime: phys.landing.minTrickAirTime });
     if (trick) {
