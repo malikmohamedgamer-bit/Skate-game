@@ -189,7 +189,14 @@ export function normalizeSave(s, now = Date.now()) {
   if (isObj(s.quests)) {
     if (isObj(s.quests.progress))
       for (const [id, q] of Object.entries(s.quests.progress))
-        if (isObj(q)) out.quests.progress[id] = { progress: Math.max(0, Number(q.progress) || 0), completed: !!q.completed, rewarded: !!q.rewarded, day: typeof q.day === 'string' ? q.day : undefined };
+        if (isObj(q))
+          out.quests.progress[id] = {
+            progress: Math.max(0, Number(q.progress) || 0),
+            completed: !!q.completed,
+            rewarded: !!q.rewarded,
+            day: typeof q.day === 'string' ? q.day : undefined,
+            ...(Array.isArray(q.seen) ? { seen: q.seen.filter((x) => typeof x === 'string') } : {}),
+          };
     if (isObj(s.quests.daily)) out.quests.daily = { day: typeof s.quests.daily.day === 'string' ? s.quests.daily.day : null, ids: Array.isArray(s.quests.daily.ids) ? s.quests.daily.ids.filter((x) => typeof x === 'string') : [] };
   }
   out.levels = {};

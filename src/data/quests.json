@@ -1,0 +1,40 @@
+{
+  "_comment": "Quests. type: story (ordered chain, one active at a time) | daily (3 picked per day from the pool, reset at local midnight) | challenge (one-time). goal.kind: cleanTricks | speed (km/h) | grindSeconds | combo | pickups | finishLevel | buyItem | visitMap | runScore | airTime. Optional filters: trickIncludes, spin, grind, vehicle, map, level, stars, maps (visitMap: distinct maps).",
+  "dailyPerDay": 3,
+  "quests": [
+    { "id": "story-01", "type": "story", "order": 1, "title": "Roll Out", "description": "Push off and reach 15 km/h.", "goal": { "kind": "speed", "target": 15 }, "reward": 30 },
+    { "id": "story-02", "type": "story", "order": 2, "title": "Pop It", "description": "Land 3 clean tricks. An ollie counts!", "goal": { "kind": "cleanTricks", "target": 3 }, "reward": 40 },
+    { "id": "story-03", "type": "story", "order": 3, "title": "First Grind", "description": "Grind rails, ledges or benches for 2 seconds in total.", "goal": { "kind": "grindSeconds", "target": 2 }, "reward": 50 },
+    { "id": "story-04", "type": "story", "order": 4, "title": "Flip Out", "description": "Land 2 flip tricks (kickflip, heelflip, front flip...).", "goal": { "kind": "cleanTricks", "target": 2, "trickIncludes": "flip" }, "reward": 60 },
+    { "id": "story-05", "type": "story", "order": 5, "title": "Street Cred", "description": "Finish the level \"First Push\".", "goal": { "kind": "finishLevel", "target": 1, "level": "n1", "stars": 1 }, "reward": 75 },
+    { "id": "story-06", "type": "story", "order": 6, "title": "Bolt Collector", "description": "Collect 10 bolt pickups.", "goal": { "kind": "pickups", "target": 10 }, "reward": 80 },
+    { "id": "story-07", "type": "story", "order": 7, "title": "Combo Starter", "description": "Land a combo of 4 tricks in a row.", "goal": { "kind": "combo", "target": 4 }, "reward": 90 },
+    { "id": "story-08", "type": "story", "order": 8, "title": "Park Life", "description": "Visit the Concrete Jungle Skatepark.", "goal": { "kind": "visitMap", "target": 1, "map": "skatepark" }, "reward": 100 },
+    { "id": "story-09", "type": "story", "order": 9, "title": "Gear Up", "description": "Buy any item in the shop.", "goal": { "kind": "buyItem", "target": 1 }, "reward": 100 },
+    { "id": "story-10", "type": "story", "order": 10, "title": "Speed Demon", "description": "Reach 45 km/h.", "goal": { "kind": "speed", "target": 45 }, "reward": 150 },
+    { "id": "story-11", "type": "story", "order": 11, "title": "Town Crier", "description": "Visit the Town Plaza.", "goal": { "kind": "visitMap", "target": 1, "map": "plaza" }, "reward": 120 },
+    { "id": "story-12", "type": "story", "order": 12, "title": "Downtown Legend", "description": "Get 2 stars on \"Bomb the Hill\".", "goal": { "kind": "finishLevel", "target": 1, "level": "d1", "stars": 2 }, "reward": 250 },
+
+    { "id": "daily-tricks", "type": "daily", "title": "Trick Grind", "description": "Land 15 clean tricks today.", "goal": { "kind": "cleanTricks", "target": 15 }, "reward": 40 },
+    { "id": "daily-grind", "type": "daily", "title": "Rail Time", "description": "Grind for 10 seconds today.", "goal": { "kind": "grindSeconds", "target": 10 }, "reward": 50 },
+    { "id": "daily-combo", "type": "daily", "title": "Chain Gang", "description": "Land a combo of 5.", "goal": { "kind": "combo", "target": 5 }, "reward": 50 },
+    { "id": "daily-pickups", "type": "daily", "title": "Bolt Hunt", "description": "Collect 8 bolt pickups today.", "goal": { "kind": "pickups", "target": 8 }, "reward": 40 },
+    { "id": "daily-speed", "type": "daily", "title": "Need for Speed", "description": "Reach 40 km/h.", "goal": { "kind": "speed", "target": 40 }, "reward": 30 },
+    { "id": "daily-level", "type": "daily", "title": "Level Up", "description": "Finish any level with at least 1 star.", "goal": { "kind": "finishLevel", "target": 1, "stars": 1 }, "reward": 50 },
+    { "id": "daily-flips", "type": "daily", "title": "Flip Side", "description": "Land 5 flip tricks today.", "goal": { "kind": "cleanTricks", "target": 5, "trickIncludes": "flip" }, "reward": 45 },
+    { "id": "daily-spins", "type": "daily", "title": "Spin Cycle", "description": "Land 5 spin tricks (180s, 360s...) today.", "goal": { "kind": "cleanTricks", "target": 5, "spin": true }, "reward": 45 },
+
+    { "id": "ch-tricks-100", "type": "challenge", "title": "Centurion", "description": "Land 100 clean tricks.", "goal": { "kind": "cleanTricks", "target": 100 }, "reward": 200 },
+    { "id": "ch-grind-60", "type": "challenge", "title": "Grind Master", "description": "Grind for 60 seconds in total.", "goal": { "kind": "grindSeconds", "target": 60 }, "reward": 250 },
+    { "id": "ch-combo-10", "type": "challenge", "title": "Combo King", "description": "Land a combo of 10.", "goal": { "kind": "combo", "target": 10 }, "reward": 300 },
+    { "id": "ch-pickups-50", "type": "challenge", "title": "Magpie", "description": "Collect 50 bolt pickups.", "goal": { "kind": "pickups", "target": 50 }, "reward": 250 },
+    { "id": "ch-speed-55", "type": "challenge", "title": "Terminal Velocity", "description": "Reach 55 km/h. Try the downtown hill.", "goal": { "kind": "speed", "target": 55 }, "reward": 300 },
+    { "id": "ch-all-maps", "type": "challenge", "title": "Tourist", "description": "Visit all four themed maps.", "goal": { "kind": "visitMap", "target": 4, "maps": ["neighborhood", "skatepark", "plaza", "downtown"] }, "reward": 300 },
+    { "id": "ch-3stars", "type": "challenge", "title": "Perfectionist", "description": "Earn 3 stars on any level.", "goal": { "kind": "finishLevel", "target": 1, "stars": 3 }, "reward": 250 },
+    { "id": "ch-shopper", "type": "challenge", "title": "Shopaholic", "description": "Buy 5 items in the shop.", "goal": { "kind": "buyItem", "target": 5 }, "reward": 200 },
+    { "id": "ch-tre-flip", "type": "challenge", "title": "Tre Bien", "description": "Land a Tre Flip (360 shove-it + kickflip) on a skateboard.", "goal": { "kind": "cleanTricks", "target": 1, "trickIncludes": "tre flip" }, "reward": 150 },
+    { "id": "ch-score-20k", "type": "challenge", "title": "High Roller", "description": "Score 20,000 points in a single run.", "goal": { "kind": "runScore", "target": 20000 }, "reward": 300 },
+    { "id": "ch-scooter", "type": "challenge", "title": "Scoot Over", "description": "Land 10 clean tricks on the scooter.", "goal": { "kind": "cleanTricks", "target": 10, "vehicle": "scooter" }, "reward": 200 },
+    { "id": "ch-big-air", "type": "challenge", "title": "Hang Time", "description": "Stay in the air for 1.5 seconds in one jump.", "goal": { "kind": "airTime", "target": 1.5 }, "reward": 200 }
+  ]
+}

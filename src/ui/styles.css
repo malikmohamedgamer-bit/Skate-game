@@ -341,12 +341,24 @@ body.high-contrast .hud .box {
 .hud .pause-btn {
   pointer-events: auto;
 }
-.hud .tracker {
-  top: calc(max(10px, env(safe-area-inset-top)) + 5.2rem);
+.hud .hud-right {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
   right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  text-align: right;
+}
+.hud .hud-right .box {
+  position: static;
+}
+.hud .tracker {
   max-width: min(340px, 40vw);
   font-size: 0.85rem;
   font-weight: 700;
+  text-align: left;
 }
 .hud .tracker h3 {
   margin: 0 0 0.2rem;
@@ -564,4 +576,46 @@ table.keys th {
 }
 .objective .obj-time.low {
   color: var(--bad);
+}
+
+/* ---------- Quest log ---------- */
+.tabs {
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.tab[aria-selected='true'] {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+.quest-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.quest {
+  border: 2px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+}
+.quest.done {
+  border-color: var(--good);
+}
+.quest.locked {
+  opacity: 0.7;
+  border-style: dashed;
+}
+.quest p {
+  margin: 0.2rem 0 0.4rem;
+}
+.quest-bar {
+  flex: 1;
+  min-width: 120px;
+}
+.quest-progress {
+  font-variant-numeric: tabular-nums;
+  min-width: 7em;
+  text-align: right;
 }

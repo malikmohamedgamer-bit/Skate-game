@@ -136,7 +136,7 @@ export function playLevel(data, level, tasks, { maxSeconds = null, vehicle = 'sk
     for (const e of session.drainEvents()) {
       if (e.type === 'bail') e.at = `${b.pos.x.toFixed(1)},${b.pos.z.toFixed(1)} task ${ti}`;
       events.push(e);
-      applyEvent(run, profile, e);
+      applyEvent(run, profile, e, { questDefs: data.quests, vehicle });
     }
     tickRun(run, profile, dt, { inTrick: b.state === 'air' || b.state === 'grind' });
     const r = updateLevelRun(

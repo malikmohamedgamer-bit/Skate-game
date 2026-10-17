@@ -95,3 +95,19 @@ Verified
 - Screenshots: level select (locks + reasons), level HUD, time-trial checkpoints, results.
 - Bugs found and fixed: BUGS.md #11–#14.
 - `npx eslint .` → clean.
+
+## Milestone 6 — Quests
+
+Added
+- `src/data/quests.json`: 32 quests — 12 story (ordered chain), 8 daily (3 picked per local day, deterministic by date), 12 challenges (one-time). Goal kinds: clean tricks (with trick-name / spin / vehicle filters), reach speed, grind seconds, combo, pickups, finish a level (level + stars), buy items, visit maps (distinct), run score, airtime.
+- `src/game/quests.js` (pure): daily pick and reset by device date, story chain activation, event → progress (count vs. best-value goals), completion, `claimRewards` (each completion rewarded once), catch-up sync with profile facts (never for dailies), quest view, validation.
+- Progression routes gameplay events to quests (tricks, combos, run score, grind time, pickups, speed rises ≥ 0.5 km/h); main sends map visits and level finishes. Rewards are credited automatically and announced (toast + screen reader).
+- `src/ui/quests-ui.js`: quest log with Story / Daily / Challenges tabs (WAI-ARIA tabs: arrows/Home/End), progress bars with `aria-valuetext`, status icon + word. HUD tracker shows up to 3 active quests.
+- Save normalizer keeps quest `seen` lists and days.
+
+Verified
+- `npm test` → 179 tests, 179 pass (14 new quest tests: ≥ 25 quests of all types and kinds, valid data, daily rotation/reset by date, ordered story chain, filters, distinct maps, stars, **reward exactly once**, re-earnable dailies, persistence round trip).
+- `npx playwright test` → 26 passed. New: reaching 15 km/h with W completes "Roll Out", +30 Bolts exactly once (more speed and a page reload do not re-grant); quest log tabs by keyboard; dailies change when the device date changes.
+- Screenshots: quest log, HUD tracker (after layout fix).
+- Bugs: BUGS.md #15, #16.
+- `npx eslint .` → clean.

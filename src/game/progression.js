@@ -5,6 +5,7 @@
 
 import { applyBail, awardTrick, createScore, tickCombo } from './scoring.js';
 import { addBolts, createRunEarnings, earnFromGrind, earnFromPickup, earnFromTrick } from './economy.js';
+import { applyQuestEvent, claimRewards, syncQuestsWithProfile } from './quests.js';
 
 export function createRun({ mode = 'free', mapId = null, levelId = null } = {}) {
   return {
@@ -19,8 +20,40 @@ export function createRun({ mode = 'free', mapId = null, levelId = null } = {}) 
     grindDistance: 0,
     grindBoltsPending: 0,
     maxSpeed: 0,
+    reportedKmh: 0,
     tricks: [],
   };
+}
+
+/**
+ * Feed one quest event (see quests.js eventAmount) to the profile's quests.
+ * Completed quests are rewarded immediately (once). Returns notifications
+ * { type: 'questComplete', id, title, reward } and { type: 'bolts' }.
+ */
+export function questEvent(profile, questDefs, qe) {
+  if (!questDefs || !questDefs.length) return [];
+  const r = applyQuestEvent(profile.quests, questDefs, qe);
+  profile.quests = r.state;
+  if (!r.completed.length) return [];
+  // A finished story quest unlocks the next one: catch it up with world facts
+  // (maps already visited, stars already earned).
+  for (let guard = 0; guard < questDefs.length; guard++) {
+    const synced = syncQuestsWithProfile(profile.quests, questDefs, profile);
+    profile.quests = synced.state;
+    if (!synced.completed.length) break;
+  }
+  const claim = claimRewards(profile.quests, questDefs);
+  profile.quests = claim.state;
+  const out = [];
+  let total = 0;
+  for (const id of claim.claimed) {
+    const q = questDefs.find((x) => x.id === id);
+    total += q.reward;
+    out.push({ type: 'questComplete', id, title: q.title, reward: q.reward, questType: q.type });
+  }
+  const gained = creditBolts(profile, total);
+  if (gained > 0) out.push({ type: 'bolts', amount: gained, source: 'quest' });
+  return out;
 }
 
 /** Credit Bolts to the profile and record lifetime earnings. */
@@ -39,8 +72,12 @@ export function creditBolts(profile, amount) {
  *   { type: 'bail', reason }
  *   { type: 'pickup', id, bolts }
  */
-export function applyEvent(run, profile, e) {
+export function applyEvent(run, profile, e, ctx = null) {
   const out = [];
+  const quests = ctx && ctx.questDefs;
+  const q = (qe) => {
+    if (quests) out.push(...questEvent(profile, quests, { vehicle: ctx.vehicle, map: run.mapId, ...qe }));
+  };
   switch (e.type) {
     case 'trickLanded': {
       const r = awardTrick(run.score, e.points);
@@ -60,6 +97,9 @@ export function applyEvent(run, profile, e) {
       }
       const gained = creditBolts(profile, bolts);
       if (gained > 0) out.push({ type: 'bolts', amount: gained, source: e.grind ? 'grind' : 'trick' });
+      q({ type: 'trick', name: e.name, grind: !!e.grind, spin: !!(e.trick && e.trick.spin), airTime: e.airTime || 0 });
+      q({ type: 'combo', count: r.combo });
+      q({ type: 'runScore', score: run.score.score });
       break;
     }
     case 'grindTick': {
@@ -69,6 +109,7 @@ export function applyEvent(run, profile, e) {
       const g = earnFromGrind(run.earnings, e.dt);
       run.earnings = g.run;
       run.grindBoltsPending += g.bolts;
+      q({ type: 'grind', seconds: e.dt });
       break;
     }
     case 'bail': {
@@ -92,6 +133,7 @@ export function applyEvent(run, profile, e) {
         const gained = creditBolts(profile, p.bolts);
         out.push({ type: 'pickup', id: e.id, bolts: gained });
         out.push({ type: 'bolts', amount: gained, source: 'pickup' });
+        q({ type: 'pickup' });
       }
       break;
     }
@@ -102,15 +144,22 @@ export function applyEvent(run, profile, e) {
 }
 
 /** Advance run time and the combo window. Returns notifications ({ type: 'comboEnd' }). */
-export function tickRun(run, profile, dt, { inTrick = false, speed = 0, distance = 0 } = {}) {
+export function tickRun(run, profile, dt, { inTrick = false, speed = 0, distance = 0, ctx = null } = {}) {
   run.time += dt;
   if (speed > run.maxSpeed) run.maxSpeed = speed;
   profile.stats.playSeconds += dt;
   profile.stats.distance += distance;
+  const out = [];
+  // Report speed to quests when it rises by at least 0.5 km/h (avoids per-tick work).
+  const kmh = run.maxSpeed * 3.6;
+  if (ctx && ctx.questDefs && kmh >= run.reportedKmh + 0.5) {
+    run.reportedKmh = kmh;
+    out.push(...questEvent(profile, ctx.questDefs, { type: 'speed', kmh, map: run.mapId, vehicle: ctx.vehicle }));
+  }
   const r = tickCombo(run.score, dt, inTrick);
   run.score = r.state;
-  if (r.ended && r.ended.count > 1) return [{ type: 'comboEnd', count: r.ended.count, points: r.ended.points }];
-  return [];
+  if (r.ended && r.ended.count > 1) out.push({ type: 'comboEnd', count: r.ended.count, points: r.ended.points });
+  return out;
 }
 
 /** At the end of a run: record best score. */

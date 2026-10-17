@@ -10,12 +10,14 @@ export function createHud(root) {
       <div class="combo" id="hud-combo" aria-hidden="true"></div>
     </div>
     <div class="box objective" id="hud-objective" hidden></div>
-    <div class="box tr">
-      <div><span aria-hidden="true">⚡</span> <span class="bolts" id="hud-bolts">0</span> <span class="muted">Bolts</span></div>
-      <div class="speed"><span id="hud-speed">0</span> km/h</div>
-      <button class="btn pause-btn" id="hud-pause" aria-label="Pause">❚❚ Pause</button>
+    <div class="hud-right">
+      <div class="box">
+        <div><span aria-hidden="true">⚡</span> <span class="bolts" id="hud-bolts">0</span> <span class="muted">Bolts</span></div>
+        <div class="speed"><span id="hud-speed">0</span> km/h</div>
+        <button class="btn pause-btn" id="hud-pause" aria-label="Pause">❚❚ Pause</button>
+      </div>
+      <div class="box tracker" id="hud-tracker" hidden></div>
     </div>
-    <div class="box tracker" id="hud-tracker" hidden></div>
     <div class="trick" id="hud-trick" hidden></div>
     <div class="box bl" id="hud-balance" hidden>
       <div class="muted" style="font-size:.8rem">Balance</div>

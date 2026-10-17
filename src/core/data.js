@@ -8,6 +8,7 @@ export const DATA_FILES = {
   vehicles: 'data/vehicles.json',
   tricks: 'data/tricks.json',
   levels: 'data/levels.json',
+  quests: 'data/quests.json',
 };
 
 export async function loadGameData(readJson) {
@@ -16,6 +17,8 @@ export async function loadGameData(readJson) {
   const values = await Promise.all(entries.map(([, p]) => readJson(p)));
   entries.forEach(([k], i) => (out[k] = values[i]));
   out.levels = out.levels.levels;
+  out.questsPerDay = out.quests.dailyPerDay ?? 3;
+  out.quests = out.quests.quests;
   const index = await readJson('world/maps/index.json');
   const maps = await Promise.all(index.maps.map((id) => readJson(`world/maps/${id}.json`)));
   out.maps = {};

@@ -6,7 +6,8 @@ import { createInput } from './core/input.js';
 import { createCameraRig } from './core/camera.js';
 import { createSaveStore } from './core/save.js';
 import { createSession } from './game/session.js';
-import { applyEvent, createRun, creditBolts, finishRun, tickRun } from './game/progression.js';
+import { applyEvent, createRun, creditBolts, finishRun, questEvent, tickRun } from './game/progression.js';
+import { dayKey, refreshDaily, syncQuestsWithProfile } from './game/quests.js';
 import { comboMultiplier } from './game/scoring.js';
 import { levelReward, runTotal } from './game/economy.js';
 import {
@@ -23,6 +24,7 @@ import { buildCheckpointMeshes, buildObjectMeshes, buildPickupMeshes, choosePale
 import { createRiderModel } from './rider/rider.js';
 import { createHud } from './ui/hud.js';
 import { createScreenManager, esc, showFreeRoam, showHelp, showLevelSelect, showMainMenu, showPause, showResults } from './ui/menu.js';
+import { showQuestLog, trackerItems } from './ui/quests-ui.js';
 import { speedOf } from './physics/body.js';
 import { lenXZ, yawOf } from './physics/math.js';
 
@@ -44,6 +46,7 @@ const app = {
   saveTimer: 0,
   errors: [],
   lastResult: null,
+  questLog: [],
 };
 
 // ---------------------------------------------------------------------------
@@ -77,6 +80,8 @@ async function boot() {
   const loaded = app.store.load();
   app.profile = loaded.save;
   app.saveStatus = loaded.status;
+  refreshQuestsForToday();
+  app.profile.quests = syncQuestsWithProfile(app.profile.quests, app.data.quests, app.profile).state;
 
   app.input = createInput({ target: window, bindings: app.profile.bindings || undefined });
   app.input.attachMouse(canvas);
@@ -140,6 +145,33 @@ function flushSave() {
 }
 
 // ---------------------------------------------------------------------------
+// Quests
+// ---------------------------------------------------------------------------
+/** Pick today's daily quests (device clock); resets them when the day changes. */
+function refreshQuestsForToday() {
+  const today = dayKey(app.now ? app.now() : new Date());
+  if (app.profile.quests.daily.day !== today) {
+    app.profile.quests = refreshDaily(app.profile.quests, app.data.quests, today, app.data.questsPerDay);
+    markDirty();
+  }
+  return today;
+}
+
+function questCtx() {
+  return { questDefs: app.data.quests, vehicle: app.session ? app.session.vehicle : app.profile.equipped.vehicle };
+}
+
+/** Send a non-gameplay quest event (map visit, level finish, purchase). */
+function sendQuestEvent(qe) {
+  for (const n of questEvent(app.profile, app.data.quests, { vehicle: questCtx().vehicle, ...qe })) notify(n);
+  markDirty();
+}
+
+function updateTracker() {
+  app.hud.setTracker(app.profile.settings.a11y.questTracker === false ? null : trackerItems(app.profile, app.data, 3));
+}
+
+// ---------------------------------------------------------------------------
 // Screen routing
 // ---------------------------------------------------------------------------
 function setScreen(name) {
@@ -167,6 +199,9 @@ function go(name) {
       break;
     case 'help':
       showHelp(app.screens, { bindings: app.input.bindings }, { back });
+      break;
+    case 'quests':
+      showQuestLog(app.screens, { profile: app.profile, data: app.data, day: refreshQuestsForToday() }, { back });
       break;
     default:
       // Quests, shop and settings screens are added in later milestones.
@@ -264,6 +299,7 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
     app.profile.visitedMaps.push(mapId);
     markDirty();
   }
+  refreshQuestsForToday();
   app.cameraRig.mode = app.profile.settings.camera.mode;
   app.cameraRig.snap();
   app.loop.setTimeScale(a11y.gameSpeed);
@@ -273,6 +309,8 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
   app.hud.setObjective(null);
   app.input.reset();
   setScreen('play');
+  sendQuestEvent({ type: 'mapVisited', mapId });
+  updateTracker();
   if (level) {
     app.hud.toast(`${level.name}: go!`, 2);
     announce(`${level.name}. ${objectiveText(level, app.levelRun).title}. ${level.timeLimit} seconds.`);
@@ -316,6 +354,7 @@ function finishLevel() {
     boltsLevel: bolts,
   };
   app.lastResult = { levelId: level.id, ...result, status: lr.status };
+  if (lr.stars > 0) sendQuestEvent({ type: 'levelFinished', levelId: level.id, stars: lr.stars });
   markDirty();
   endSession();
   setScreen('results');
@@ -348,7 +387,7 @@ function tick(dt) {
   for (const e of s.drainEvents()) handleGameEvent(e);
   const inTrick = s.body.state === 'air' || s.body.state === 'grind';
   const dist = Math.hypot(s.body.pos.x - before.x, s.body.pos.z - before.z);
-  for (const n of tickRun(app.run, app.profile, dt, { inTrick, speed: speedOf(s.body), distance: dist })) notify(n);
+  for (const n of tickRun(app.run, app.profile, dt, { inTrick, speed: speedOf(s.body), distance: dist, ctx: questCtx() })) notify(n);
   if (app.levelRun) {
     const r = updateLevelRun(
       app.levelRun,
@@ -380,7 +419,7 @@ function tick(dt) {
 function handleGameEvent(e) {
   if (e.type === 'land') landedThisFrame = true;
   if (e.type === 'pickup' && app.pickupMeshes) app.pickupMeshes.setTaken(e.id, true);
-  const notes = applyEvent(app.run, app.profile, e);
+  const notes = applyEvent(app.run, app.profile, e, questCtx());
   for (const n of notes) notify(n);
   if (notes.length) markDirty();
 }
@@ -396,8 +435,14 @@ function notify(n) {
     app.hud.setScore(sc.score, 0, 1);
   } else if (n.type === 'bolts') {
     app.hud.setBolts(app.profile.bolts);
+    app.trackerDirty = true;
   } else if (n.type === 'pickup') {
     app.hud.toast(`+${n.bolts} Bolts pickup`, 1.2);
+  } else if (n.type === 'questComplete') {
+    app.hud.toast(`Quest complete: ${n.title} · +${n.reward} Bolts`, 3);
+    announce(`Quest complete: ${n.title}. Plus ${n.reward} Bolts.`);
+    app.questLog.push({ id: n.id, title: n.title, reward: n.reward });
+    updateTracker();
   } else if (n.type === 'comboEnd') {
     app.hud.setScore(sc.score, 0, 1);
     app.hud.toast(`Combo x${n.count} banked: ${n.points.toLocaleString('en-US')}`);
@@ -493,6 +538,11 @@ function render(_alpha, frameSeconds) {
   app.hud.setLiveTrick(s.currentTrickText());
   app.hud.setBalance(s.grind ? s.grind.balance : null);
   updateObjectiveHud();
+  app.trackerTimer = (app.trackerTimer || 0) + fdt;
+  if (app.trackerTimer > 0.5) {
+    app.trackerTimer = 0;
+    updateTracker();
+  }
   app.hud.update(fdt);
   app.renderer.render(app.sceneInfo.scene, app.camera);
 }
@@ -534,6 +584,14 @@ window.__game = {
   },
   profile() {
     return JSON.parse(JSON.stringify(app.profile));
+  },
+  questsCompleted() {
+    return app.questLog.slice();
+  },
+  /** Debug: override the clock (daily quest tests). Pass null to restore. */
+  setNow(ms) {
+    app.now = ms === null ? null : () => new Date(ms);
+    refreshQuestsForToday();
   },
   startFreeRoam(mapId = 'training', spawnId = null) {
     startSession({ mapId, spawnId });

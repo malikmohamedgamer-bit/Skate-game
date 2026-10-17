@@ -19,6 +19,8 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 12 | Fixed | Level bot (M5) |
 | 13 | Fixed | Level bot (M5) |
 | 14 | Fixed | E2E test (M5) |
+| 15 | Fixed | Code review (M6) |
+| 16 | Fixed | Screenshot check (M6) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -103,3 +105,15 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** remaining time was floored (89.95 s → 1:29).
 - **Fix:** countdowns round up (`formatTime` in `src/main.js`).
 - **Proof:** `e2e/levels.spec.js` › "play a level from the menu ..." asserts the HUD shows 1:30 — passes.
+
+## 15. Daily "finish any level" quest would auto-complete from history
+- **Symptom (caught before release):** catching quests up with the profile would have re-applied every level ever finished, completing the daily "Level Up" quest instantly every day.
+- **Cause:** `syncQuestsWithProfile` applied history to all quest types.
+- **Fix:** the sync skips daily quests (`src/game/quests.js`).
+- **Proof:** `tests/quests.test.js` › "syncing with the profile catches up map/level quests but never dailies" — passes.
+
+## 16. HUD quest tracker overlapped the Pause button
+- **Symptom:** in a screenshot the tracker box covered the Pause button.
+- **Cause:** the tracker was absolutely positioned at a fixed offset, but the stats box above it is taller when the Pause button wraps.
+- **Fix:** the right-hand HUD boxes now stack in a flex column (`.hud-right`).
+- **Proof:** screenshot after the fix shows the tracker below the stats box; `e2e/quests.spec.js` checks the tracker text.

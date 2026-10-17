@@ -40,7 +40,9 @@ test('riding through a pickup collects it and adds Bolts', async ({ page }) => {
   await advance(page, 2);
   const s1 = await state(page);
   expect(s1.pickups.find((x) => x.id === 'n-p1').taken).toBe(true);
-  expect(s1.bolts).toBe(s0.bolts + 10);
-  await expect(page.locator('#hud-bolts')).toHaveText(String(s0.bolts + 10));
+  // Riding at 18 km/h also completes the first story quest; count its reward separately.
+  const questBolts = (await page.evaluate(() => window.__game.questsCompleted())).reduce((a, q) => a + q.reward, 0);
+  expect(s1.bolts).toBe(s0.bolts + 10 + questBolts);
+  await expect(page.locator('#hud-bolts')).toHaveText(String(s1.bolts));
   expectNoErrors(errors);
 });
