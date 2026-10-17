@@ -1,0 +1,113 @@
+{
+  "_comment": "Trick names and base points. Names are generated from combinations of these parts: [Fakie] [spin dir + amount] [combo | board spin + flip] [grab]. spinLeft/spinRight are the prefixes for body spins. flips.up/down are indexed by flip count (1, 2, 3). combos replace the board spin + flip pair with a special name.",
+  "skateboard": {
+    "ollie": { "name": "Ollie", "points": 50 },
+    "air": { "name": "Air", "points": 40 },
+    "spinLeft": "BS",
+    "spinRight": "FS",
+    "spins": {
+      "180": 120,
+      "360": 300,
+      "540": 550,
+      "720": 850,
+      "900": 1250,
+      "1080": 1700
+    },
+    "flips": {
+      "up": [
+        { "name": "Kickflip", "points": 200 },
+        { "name": "Double Kickflip", "points": 450 },
+        { "name": "Triple Kickflip", "points": 800 }
+      ],
+      "down": [
+        { "name": "Heelflip", "points": 220 },
+        { "name": "Double Heelflip", "points": 480 },
+        { "name": "Triple Heelflip", "points": 850 }
+      ]
+    },
+    "boardSpins": {
+      "180": { "name": "Shove-it", "points": 120 },
+      "360": { "name": "360 Shove-it", "points": 280 },
+      "540": { "name": "540 Shove-it", "points": 500 },
+      "720": { "name": "720 Shove-it", "points": 760 }
+    },
+    "combos": [
+      { "flip": "up", "count": 1, "board": 180, "name": "Varial Kickflip", "points": 380 },
+      { "flip": "up", "count": 1, "board": 360, "name": "Tre Flip", "points": 600 },
+      { "flip": "down", "count": 1, "board": 180, "name": "Varial Heelflip", "points": 400 },
+      { "flip": "down", "count": 1, "board": 360, "name": "Laser Flip", "points": 650 },
+      { "flip": "up", "count": 2, "board": 360, "name": "Double Tre Flip", "points": 1000 }
+    ],
+    "grabs": {
+      "indy": { "name": "Indy", "points": 100, "perSecond": 200 },
+      "nose": { "name": "Nose Grab", "points": 110, "perSecond": 220 },
+      "tail": { "name": "Tail Grab", "points": 110, "perSecond": 220 }
+    },
+    "grinds": {
+      "aligned": { "name": "50-50 Grind", "perSecond": 260 },
+      "angled": { "name": "Crooked Grind", "perSecond": 330 },
+      "perpendicular": { "name": "Boardslide", "perSecond": 300 }
+    },
+    "ledgeGrinds": {
+      "aligned": { "name": "5-0 Grind", "perSecond": 260 },
+      "angled": { "name": "Smith Grind", "perSecond": 330 },
+      "perpendicular": { "name": "Lipslide", "perSecond": 300 }
+    }
+  },
+  "scooter": {
+    "ollie": { "name": "Bunny Hop", "points": 50 },
+    "air": { "name": "Air", "points": 40 },
+    "spinLeft": "BS",
+    "spinRight": "FS",
+    "spins": {
+      "180": 130,
+      "360": 320,
+      "540": 580,
+      "720": 900,
+      "900": 1300,
+      "1080": 1750
+    },
+    "flips": {
+      "up": [
+        { "name": "Front Flip", "points": 600 },
+        { "name": "Double Front Flip", "points": 1400 }
+      ],
+      "down": [
+        { "name": "Backflip", "points": 550 },
+        { "name": "Double Backflip", "points": 1300 }
+      ]
+    },
+    "boardSpins": {
+      "360": { "name": "Tailwhip", "points": 300 },
+      "720": { "name": "Double Whip", "points": 750 },
+      "1080": { "name": "Triple Whip", "points": 1300 }
+    },
+    "combos": [
+      { "flip": "down", "count": 1, "board": 360, "name": "Flair Whip", "points": 1100 },
+      { "flip": "up", "count": 1, "board": 360, "name": "Front Flip Whip", "points": 1150 },
+      { "flip": "down", "count": 1, "board": 720, "name": "Flair Double Whip", "points": 1600 }
+    ],
+    "grabs": {
+      "nohander": { "name": "No Hander", "points": 140, "perSecond": 220 },
+      "superman": { "name": "Superman", "points": 160, "perSecond": 260 },
+      "nacnac": { "name": "Nac Nac", "points": 150, "perSecond": 240 }
+    },
+    "grinds": {
+      "aligned": { "name": "Feeble Grind", "perSecond": 260 },
+      "angled": { "name": "Smith Grind", "perSecond": 330 },
+      "perpendicular": { "name": "Crooked Grind", "perSecond": 300 }
+    },
+    "ledgeGrinds": {
+      "aligned": { "name": "Ledge Feeble", "perSecond": 260 },
+      "angled": { "name": "Ledge Smith", "perSecond": 330 },
+      "perpendicular": { "name": "Deck Slide", "perSecond": 300 }
+    }
+  },
+  "grabKeys": {
+    "skateboard": { "forward": "nose", "back": "tail", "none": "indy" },
+    "scooter": { "forward": "superman", "back": "nacnac", "none": "nohander" }
+  },
+  "airTimeBonusPerSecond": 60,
+  "minGrabTime": 0.15,
+  "grindAngles": { "aligned": 25, "angled": 60 }
+}

@@ -13,7 +13,7 @@
   "maxSpeedFactor": 1.7,
   "airDrag": 0.02,
   "vertAngle": 65,
-  "vertReturnSpeed": 0.5,
+  "vertReturnSpeed": 0.25,
   "bail": { "duration": 1.3, "speedKeep": 0.3 },
   "landing": {
     "spinTolerance": 25,

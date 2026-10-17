@@ -11,12 +11,14 @@
 
 import { DEG, clamp, dirToWorld, toLocal, toWorld } from './math.js';
 import { createTerrain } from '../world/terrain.js';
+import { expandObjects } from '../world/objects.js';
 
 const UP = Object.freeze({ x: 0, y: 1, z: 0 });
 
-/** Build the collision world for a normalized map and its expanded primitives. */
-export function buildWorld(map, prims = []) {
+/** Build the collision world for a normalized map (objects are expanded unless `prims` is given). */
+export function buildWorld(map, prims = null) {
   const terrain = createTerrain(map.terrain);
+  if (!prims) prims = expandObjects(map.objects || [], terrain);
   const solids = [];
   const surfaces = [];
   const carves = [];
@@ -127,6 +129,16 @@ export function resolveSolids(world, pos, prevPos, vel, r, stepUp, body = null, 
   const grounded = body ? body.grounded : false;
   const yaw = body ? body.yaw : 0;
   let result = null;
+  // Where the rider will stand this tick (it may be stepping up a stair or curb right now).
+  let standY = pos.y;
+  let standPrim = null;
+  if (grounded) {
+    const g = groundAt(world, pos.x, pos.z, pos.y + stepUp);
+    if (g.h > pos.y) {
+      standY = g.h;
+      standPrim = g.prim;
+    }
+  }
   const record = (impact, n, p) => {
     if (!result || impact > result.impactSpeed) result = { impactSpeed: impact, normal: n, prim: p, edgeBump: result?.edgeBump || false };
   };
@@ -169,7 +181,8 @@ export function resolveSolids(world, pos, prevPos, vel, r, stepUp, body = null, 
         result.edgeBump = true;
       }
     }
-    if (pos.y + allowance >= top) continue; // can ride onto it
+    const feetY = p === standPrim ? pos.y : Math.max(pos.y, standY);
+    if (feetY + allowance >= top) continue; // can ride onto it
     // Coming down onto the top from above is a landing, not a wall hit.
     if (prevInside && prevPos.y + allowance >= prevTop - 1e-3 && !internalStep) continue;
 
@@ -192,7 +205,7 @@ export function resolveSolids(world, pos, prevPos, vel, r, stepUp, body = null, 
 
   // Rails: thin fences until you are above them.
   for (const rail of world.rails) {
-    if (!inAabb(rail, pos.x, pos.z, r + 0.1)) continue;
+    if (rail.noSolid || !inAabb(rail, pos.x, pos.z, r + 0.1)) continue;
     const c = closestOnRailXZ(rail, pos.x, pos.z);
     if (c.dist > r + rail.radius) continue;
     const railY = rail.a.y + (rail.b.y - rail.a.y) * c.t;

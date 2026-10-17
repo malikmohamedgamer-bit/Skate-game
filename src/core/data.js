@@ -6,6 +6,7 @@ import { normalizeMap } from '../world/map.js';
 export const DATA_FILES = {
   physics: 'data/physics.json',
   vehicles: 'data/vehicles.json',
+  tricks: 'data/tricks.json',
 };
 
 export async function loadGameData(readJson) {

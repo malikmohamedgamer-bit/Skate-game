@@ -6,6 +6,8 @@ import { createInput } from './core/input.js';
 import { createCameraRig } from './core/camera.js';
 import { createSession } from './game/session.js';
 import { buildMapScene } from './world/scene.js';
+import { buildObjectMeshes, choosePalette } from './world/objects-mesh.js';
+import { createHud } from './ui/hud.js';
 import { createRiderModel } from './rider/rider.js';
 import { speedOf } from './physics/body.js';
 import { lenXZ, yawOf } from './physics/math.js';
@@ -96,13 +98,15 @@ function startSession(mapId) {
   disposeSession();
   const session = createSession({ data: app.data, mapId, vehicle: 'skateboard' });
   app.session = session;
-  app.sceneInfo = buildMapScene(session.map, session.world, {});
+  const palette = choosePalette({});
+  app.sceneInfo = buildMapScene(session.map, session.world, { objectMeshes: buildObjectMeshes(session.world, { palette }) });
   app.rider = createRiderModel({ vehicle: 'skateboard' });
   app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
   app.cameraRig.snap();
   $('#screens').innerHTML = '';
   $('#hud').hidden = false;
-  $('#hud').innerHTML = `<div class="box bl speed" id="hud-speed">0 km/h</div>`;
+  app.hud = createHud($('#hud'));
+  app.hud.onPause(() => togglePause());
   app.screen = 'play';
   app.input.setEnabled(true);
   app.loop.setPaused(false);
@@ -150,6 +154,8 @@ function tick(dt) {
   s.step(dt, input);
   for (const e of s.drainEvents()) {
     if (e.type === 'land') lastLanded = true;
+    else if (e.type === 'trickLanded') app.hud.showResult('clean', e.name, `+${e.points}`);
+    else if (e.type === 'bail') app.hud.showResult('bail', 'Bail', e.reason);
   }
 }
 
@@ -171,7 +177,8 @@ function render(_alpha, frameSeconds) {
         steer: s.lastInput ? s.lastInput.steer : 0,
         pushing: b.pushTimer > 0,
         landed: lastLanded,
-        trick: null,
+        trick: s.air ? { pitchDeg: s.air.pitchDeg, boardYawDeg: s.air.boardYawDeg, grab: s.air.grab } : null,
+        grind: s.grind ? { boardYaw: s.grind.boardYaw } : null,
       },
       Math.min(frameSeconds || 1 / 60, 0.1),
     );
@@ -182,8 +189,10 @@ function render(_alpha, frameSeconds) {
       reducedMotion: app.settings.a11y.reducedMotion,
     });
     app.sceneInfo.follow(b.pos);
-    const hs = $('#hud-speed');
-    if (hs) hs.textContent = `${Math.round(speed * 3.6)} km/h`;
+    app.hud.setSpeed(speed);
+    app.hud.setLiveTrick(s.currentTrickText());
+    app.hud.setBalance(s.grind ? s.grind.balance : null);
+    app.hud.update(Math.min(frameSeconds || 1 / 60, 0.1));
     app.renderer.render(app.sceneInfo.scene, app.camera);
   } else {
     app.renderer.setClearColor('#11151c');
@@ -205,14 +214,25 @@ window.__game = {
       screen: app.screen,
       ticks: app.loop?.ticks ?? 0,
       rider: b
-        ? { pos: { ...b.pos }, vel: { ...b.vel }, speed: speedOf(b), yaw: b.yaw, state: b.state, grounded: b.grounded }
+        ? { pos: { ...b.pos }, vel: { ...b.vel }, speed: speedOf(b), yaw: b.yaw, state: b.state, grounded: b.grounded, stance: b.stance }
         : null,
+      lastTrick: s?.lastTrick || null,
+      air: s?.air ? { pitchDeg: s.air.pitchDeg, yawDeg: s.air.yawDeg, boardYawDeg: s.air.boardYawDeg, grab: s.air.grab, airTime: s.air.airTime } : null,
+      grind: s?.grind ? { name: s.grind.name, balance: s.grind.balance, time: s.grind.time } : null,
+      liveTrick: s ? s.currentTrickText() : null,
+      trickText: app.hud?.trickText || '',
       camera: app.cameraRig?.state,
       errors: app.errors.slice(),
     };
   },
   startFreeRoam(mapId = 'training') {
     startSession(mapId);
+  },
+  /** Debug: place the rider (used by e2e tests to set up obstacle runs). */
+  place({ x, z, yaw = 0, speed = 0 }) {
+    app.session.respawn({ x, z, yaw });
+    app.session.body.vel = { x: Math.sin(yaw) * speed, y: 0, z: Math.cos(yaw) * speed };
+    app.cameraRig.snap();
   },
   setManual(m) {
     app.loop.setManual(m);

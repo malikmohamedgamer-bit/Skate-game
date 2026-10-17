@@ -2,15 +2,27 @@
   "id": "training",
   "name": "Training Lot",
   "order": 0,
-  "description": "A flat, open parking lot. Learn to push, carve, ollie and spin.",
+  "description": "A flat, open parking lot with one of everything. Learn to push, carve, ollie, spin, flip and grind.",
   "theme": { "sky": "#a8d8ff", "fog": "#cfe9ff", "ground": "#7d838b", "accent": "#ffb000" },
   "bounds": { "minX": -40, "maxX": 40, "minZ": -40, "maxZ": 40 },
   "terrain": { "type": "flat" },
   "spawns": [
     { "id": "main", "x": 0, "z": -30, "rot": 0 },
-    { "id": "east", "x": 30, "z": 0, "rot": -90 }
+    { "id": "east", "x": 30, "z": -30, "rot": 0 },
+    { "id": "rail", "x": -8, "z": -34, "rot": 0 },
+    { "id": "platform", "x": -20, "z": 21, "rot": 180 }
   ],
-  "objects": [],
+  "objects": [
+    { "id": "kicker1", "type": "kicker", "x": 10, "z": -16, "rot": 0, "w": 2.6, "d": 2.4, "h": 0.9 },
+    { "id": "rail1", "type": "rail", "x1": -8, "z1": -24, "x2": -8, "z2": -8, "h": 0.5 },
+    { "id": "qp1", "type": "quarter", "x": 0, "z": 33, "rot": 0, "w": 14, "r": 3, "angle": 80, "deck": 1.6 },
+    { "id": "bench1", "type": "bench", "x": -18, "z": -10, "rot": 0, "w": 0.6, "d": 4, "h": 0.45, "grind": true },
+    { "id": "curb1", "type": "curb", "x": 22, "z": 4, "rot": 0, "w": 8, "d": 12, "h": 0.15 },
+    { "id": "platform1", "type": "platform", "x": -20, "z": 22, "rot": 0, "w": 6, "d": 6, "h": 0.85 },
+    { "id": "stairs1", "type": "stairs", "x": -20, "z": 18.15, "rot": 180, "w": 4, "steps": 5, "rise": 0.17, "run": 0.34, "top": 0, "rails": "both" },
+    { "id": "barrier1", "type": "barrier", "x": 20, "z": -20, "rot": 0, "w": 6, "d": 0.5, "h": 1.1 },
+    { "id": "funbox1", "type": "funbox", "x": 22, "z": 24, "rot": 90, "w": 3, "d": 3, "h": 0.7, "ramp": 2.2, "rail": true }
+  ],
   "pickups": [],
   "unlock": { "stars": 0 }
 }

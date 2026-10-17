@@ -451,3 +451,27 @@ body.reduced-motion *::after {
   animation: none !important;
   transition: none !important;
 }
+
+/* ---------- Grind balance meter ---------- */
+.balance-bar {
+  position: relative;
+  width: 180px;
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--bad), transparent 30%, transparent 70%, var(--bad));
+  border: 2px solid var(--panel-border);
+}
+.balance-bar span {
+  position: absolute;
+  top: -5px;
+  width: 6px;
+  height: 20px;
+  margin-left: -3px;
+  background: var(--text);
+  border-radius: 3px;
+}
+.balance-bar span.warn {
+  background: var(--bad);
+  width: 10px;
+  margin-left: -5px;
+}

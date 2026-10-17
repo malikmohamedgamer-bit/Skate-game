@@ -187,10 +187,16 @@ export function stepBody(b, world, stats, phys, input, dt) {
   const bounds = clampToBounds(world, b.pos, b.vel, phys.riderRadius, phys.wallRestitution / stats.weight);
   const impact = Math.max(hit ? hit.impactSpeed : 0, bounds ? bounds.impactSpeed : 0);
   if (hit || bounds) {
-    b.events.push({ type: 'wallHit', impactSpeed: impact });
+    b.events.push({ type: 'wallHit', impactSpeed: impact, prim: hit && hit.prim ? hit.prim.id : 'bounds' });
     if (impact > phys.slamSpeed && b.state !== 'bail') bail(b, phys, 'slam');
   }
   if (hit && hit.edgeBump) b.events.push({ type: 'edgeBump' });
+  // Glancing wall hits deflect the board so it rolls along the wall instead of grinding into it.
+  if ((hit || bounds) && b.grounded && b.state === 'ride' && lenXZ(b.vel) > 0.3) {
+    const f = forwardXZ(b.yaw);
+    const vy = yawOf(b.vel);
+    b.yaw = b.vel.x * f.x + b.vel.z * f.z >= 0 ? vy : wrapAngle(vy + Math.PI);
+  }
   // Ground contact.
   if (b.grounded) {
     groundContact(b, world, phys);
