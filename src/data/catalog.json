@@ -1,0 +1,104 @@
+{
+  "_comment": "Shop catalog. stats are added to the vehicle's base handling (vehicles.json): jump (ollie m/s), topSpeed (m/s), turnRate (rad/s), grip, trickBonus, weight. Outfits, helmets, pads and trails are cosmetic. Prices in Bolts; price 0 = starter item.",
+  "categories": [
+    { "id": "vehicle", "label": "Boards & scooters", "slot": "vehicle" },
+    { "id": "deck", "label": "Decks", "vehicle": "skateboard", "slot": "deck", "effect": "Ollie height" },
+    { "id": "trucks", "label": "Trucks", "vehicle": "skateboard", "slot": "trucks", "effect": "Turn rate" },
+    { "id": "wheels", "label": "Wheels", "vehicle": "skateboard", "slot": "wheels", "effect": "Grip and speed" },
+    { "id": "grip", "label": "Grip tape", "vehicle": "skateboard", "slot": "grip", "effect": "Trick bonus" },
+    { "id": "sdeck", "label": "Scooter decks", "vehicle": "scooter", "slot": "deck", "effect": "Jump height" },
+    { "id": "bars", "label": "Bars", "vehicle": "scooter", "slot": "bars", "effect": "Turn rate" },
+    { "id": "swheels", "label": "Scooter wheels", "vehicle": "scooter", "slot": "wheels", "effect": "Grip and speed" },
+    { "id": "fork", "label": "Forks", "vehicle": "scooter", "slot": "fork", "effect": "Grip" },
+    { "id": "outfit", "label": "Outfits", "slot": "outfit", "effect": "Cosmetic" },
+    { "id": "helmet", "label": "Helmets", "slot": "helmet", "effect": "Cosmetic" },
+    { "id": "pads", "label": "Pads", "slot": "pads", "effect": "Cosmetic" },
+    { "id": "trail", "label": "Trails", "slot": "trail", "effect": "Cosmetic" }
+  ],
+  "items": [
+    { "id": "vehicle_skateboard", "category": "vehicle", "name": "Skateboard", "price": 0, "vehicle": "skateboard", "description": "Push-and-coast. Flips are board flips; shove-its spin 180." },
+    { "id": "vehicle_scooter", "category": "vehicle", "name": "Kick Scooter", "price": 200, "vehicle": "scooter", "description": "Quick kicks, tight turns, +15% trick points. Tailwhips and body flips." },
+
+    { "id": "deck_classic", "category": "deck", "name": "Classic Popsicle", "price": 0, "stats": {}, "model": { "shape": "popsicle" }, "defaultColor": "#d94a38" },
+    { "id": "deck_street", "category": "deck", "name": "Street Deck", "price": 80, "stats": { "jump": 0.25 }, "model": { "shape": "popsicle" }, "defaultColor": "#2f80ed" },
+    { "id": "deck_cruiser", "category": "deck", "name": "Cruiser", "price": 150, "stats": { "jump": -0.2, "topSpeed": 0.6, "grip": 1 }, "model": { "shape": "cruiser" }, "defaultColor": "#27ae60" },
+    { "id": "deck_pro", "category": "deck", "name": "Pro Model", "price": 300, "stats": { "jump": 0.5 }, "model": { "shape": "popsicle" }, "defaultColor": "#8e44ad" },
+    { "id": "deck_longboard", "category": "deck", "name": "Longboard", "price": 450, "stats": { "jump": -0.4, "topSpeed": 1.5, "turnRate": -0.3 }, "model": { "shape": "longboard" }, "defaultColor": "#c0773b" },
+    { "id": "deck_carbon", "category": "deck", "name": "Carbon Pro", "price": 800, "stats": { "jump": 0.8, "weight": -0.05 }, "model": { "shape": "popsicle" }, "defaultColor": "#2b2b2b" },
+
+    { "id": "trucks_basic", "category": "trucks", "name": "Basic Trucks", "price": 0, "stats": {}, "defaultColor": "#b8bec6" },
+    { "id": "trucks_light", "category": "trucks", "name": "Lightweight Trucks", "price": 120, "stats": { "turnRate": 0.2 }, "defaultColor": "#d9dde2" },
+    { "id": "trucks_pro", "category": "trucks", "name": "Pro Trucks", "price": 350, "stats": { "turnRate": 0.4 }, "defaultColor": "#f2c94c" },
+    { "id": "trucks_titan", "category": "trucks", "name": "Titanium Trucks", "price": 700, "stats": { "turnRate": 0.55, "weight": -0.05 }, "defaultColor": "#7f8c8d" },
+
+    { "id": "wheels_basic", "category": "wheels", "name": "Basic Wheels", "price": 0, "stats": {}, "model": { "size": 1 }, "defaultColor": "#f2e9d0" },
+    { "id": "wheels_street", "category": "wheels", "name": "Street Wheels", "price": 100, "stats": { "topSpeed": 0.5 }, "model": { "size": 1 }, "defaultColor": "#ffffff" },
+    { "id": "wheels_soft", "category": "wheels", "name": "Soft Cruiser Wheels", "price": 180, "stats": { "grip": 2, "topSpeed": -0.3 }, "model": { "size": 1.2 }, "defaultColor": "#56b4e9" },
+    { "id": "wheels_speed", "category": "wheels", "name": "Speed Wheels", "price": 400, "stats": { "topSpeed": 1.2, "grip": -1 }, "model": { "size": 0.95 }, "defaultColor": "#e69f00" },
+    { "id": "wheels_pro", "category": "wheels", "name": "Pro Wheels", "price": 750, "stats": { "topSpeed": 1.0, "grip": 1 }, "model": { "size": 1.05 }, "defaultColor": "#cc79a7" },
+
+    { "id": "grip_black", "category": "grip", "name": "Black Grip", "price": 0, "stats": {}, "defaultColor": "#222222" },
+    { "id": "grip_clear", "category": "grip", "name": "Clear Grip", "price": 60, "stats": { "trickBonus": 0.02 }, "defaultColor": "#8a8f96" },
+    { "id": "grip_pro", "category": "grip", "name": "Pro Grip", "price": 250, "stats": { "trickBonus": 0.05 }, "defaultColor": "#3a2a5a" },
+
+    { "id": "sdeck_basic", "category": "sdeck", "name": "Basic Scooter Deck", "price": 0, "stats": {}, "defaultColor": "#2c3e50" },
+    { "id": "sdeck_street", "category": "sdeck", "name": "Street Scooter Deck", "price": 150, "stats": { "jump": 0.25 }, "defaultColor": "#e74c3c" },
+    { "id": "sdeck_pro", "category": "sdeck", "name": "Pro Scooter Deck", "price": 450, "stats": { "jump": 0.5, "weight": -0.05 }, "defaultColor": "#16a085" },
+
+    { "id": "bars_basic", "category": "bars", "name": "Basic Bars", "price": 0, "stats": {}, "defaultColor": "#2c7be5" },
+    { "id": "bars_wide", "category": "bars", "name": "Wide Bars", "price": 120, "stats": { "turnRate": 0.2 }, "defaultColor": "#f39c12" },
+    { "id": "bars_pro", "category": "bars", "name": "Pro Bars", "price": 380, "stats": { "turnRate": 0.4, "trickBonus": 0.03 }, "defaultColor": "#9b59b6" },
+
+    { "id": "swheels_basic", "category": "swheels", "name": "Basic Scooter Wheels", "price": 0, "stats": {}, "model": { "size": 1 }, "defaultColor": "#333333" },
+    { "id": "swheels_core", "category": "swheels", "name": "Hollow Core Wheels", "price": 160, "stats": { "topSpeed": 0.6, "grip": 1 }, "model": { "size": 1 }, "defaultColor": "#ecf0f1" },
+    { "id": "swheels_pro", "category": "swheels", "name": "Pro Scooter Wheels", "price": 500, "stats": { "topSpeed": 1.2, "grip": 1.5 }, "model": { "size": 1.1 }, "defaultColor": "#e67e22" },
+
+    { "id": "fork_basic", "category": "fork", "name": "Basic Fork", "price": 0, "stats": {}, "defaultColor": "#b8bec6" },
+    { "id": "fork_threadless", "category": "fork", "name": "Threadless Fork", "price": 140, "stats": { "grip": 1 }, "defaultColor": "#bdc3c7" },
+    { "id": "fork_pro", "category": "fork", "name": "Pro Fork", "price": 420, "stats": { "grip": 1.5, "jump": 0.15 }, "defaultColor": "#f1c40f" },
+
+    { "id": "outfit_default", "category": "outfit", "name": "Tee & Jeans", "price": 0, "look": { "shirt": "#2f80ed", "pants": "#3b3f46", "shoes": "#f5f5f5" } },
+    { "id": "outfit_hoodie", "category": "outfit", "name": "Hoodie", "price": 90, "look": { "shirt": "#6b5bd6", "pants": "#2e2e3a", "shoes": "#e0e0e0" } },
+    { "id": "outfit_vest", "category": "outfit", "name": "Puffer Vest", "price": 140, "look": { "shirt": "#e67e22", "pants": "#34495e", "shoes": "#222222" } },
+    { "id": "outfit_tracksuit", "category": "outfit", "name": "Tracksuit", "price": 220, "look": { "shirt": "#16a085", "pants": "#16a085", "shoes": "#ffffff" } },
+    { "id": "outfit_neon", "category": "outfit", "name": "Neon Kit", "price": 400, "look": { "shirt": "#f0e442", "pants": "#cc79a7", "shoes": "#56b4e9" } },
+
+    { "id": "helmet_none", "category": "helmet", "name": "No Helmet", "price": 0, "look": { "style": "none" } },
+    { "id": "helmet_basic", "category": "helmet", "name": "Skate Helmet", "price": 70, "look": { "style": "basic" }, "defaultColor": "#ffb000" },
+    { "id": "helmet_stripe", "category": "helmet", "name": "Racing Stripe Helmet", "price": 150, "look": { "style": "stripe" }, "defaultColor": "#d94a38" },
+    { "id": "helmet_full", "category": "helmet", "name": "Full-Face Helmet", "price": 300, "look": { "style": "full" }, "defaultColor": "#2b2b2b" },
+
+    { "id": "pads_none", "category": "pads", "name": "No Pads", "price": 0, "look": { "style": "none" } },
+    { "id": "pads_basic", "category": "pads", "name": "Knee & Elbow Pads", "price": 80, "look": { "style": "basic" }, "defaultColor": "#222222" },
+    { "id": "pads_pro", "category": "pads", "name": "Pro Pads", "price": 160, "look": { "style": "pro" }, "defaultColor": "#d94a38" },
+
+    { "id": "trail_none", "category": "trail", "name": "No Trail", "price": 0, "look": { "style": "none" } },
+    { "id": "trail_spark", "category": "trail", "name": "Spark Trail", "price": 100, "look": { "style": "spark" }, "defaultColor": "#ffb000" },
+    { "id": "trail_ribbon", "category": "trail", "name": "Ribbon Trail", "price": 250, "look": { "style": "ribbon" }, "defaultColor": "#56b4e9" },
+    { "id": "trail_rainbow", "category": "trail", "name": "Prism Trail", "price": 600, "look": { "style": "prism" }, "defaultColor": "#cc79a7" }
+  ],
+  "colors": [
+    { "name": "Signal Red", "hex": "#d94a38" },
+    { "name": "Sunset Orange", "hex": "#e69f00" },
+    { "name": "Bolt Yellow", "hex": "#f0e442" },
+    { "name": "Grass Green", "hex": "#009e73" },
+    { "name": "Sky Blue", "hex": "#56b4e9" },
+    { "name": "Ocean Blue", "hex": "#0072b2" },
+    { "name": "Vermilion", "hex": "#d55e00" },
+    { "name": "Orchid Pink", "hex": "#cc79a7" },
+    { "name": "Royal Purple", "hex": "#6b5bd6" },
+    { "name": "Snow White", "hex": "#f5f5f5" },
+    { "name": "Concrete Grey", "hex": "#8a8f96" },
+    { "name": "Midnight Black", "hex": "#222222" }
+  ],
+  "colorblindSafe": ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#222222"],
+  "patterns": [
+    { "id": "solid", "name": "Solid" },
+    { "id": "stripes", "name": "Stripes" },
+    { "id": "checker", "name": "Checker" },
+    { "id": "dots", "name": "Dots" },
+    { "id": "flames", "name": "Flames" },
+    { "id": "zigzag", "name": "Zigzag" },
+    { "id": "camo", "name": "Camo" }
+  ]
+}

@@ -16,6 +16,7 @@ const DEFAULT_LOOK = {
   },
   outfit: { shirt: '#2f80ed', pants: '#3b3f46', shoes: '#f5f5f5', skin: '#c68863' },
   helmet: { style: 'none', color: '#ffb000' },
+  pads: { style: 'none', color: '#222222' },
   trail: { style: 'none', color: '#ffb000' },
 };
 
@@ -27,6 +28,7 @@ export function mergeLook(look = {}) {
     parts,
     outfit: { ...DEFAULT_LOOK.outfit, ...(look.outfit || {}) },
     helmet: { ...DEFAULT_LOOK.helmet, ...(look.helmet || {}) },
+    pads: { ...DEFAULT_LOOK.pads, ...(look.pads || {}) },
     trail: { ...DEFAULT_LOOK.trail, ...(look.trail || {}) },
   };
 }
@@ -97,6 +99,12 @@ function patternTexture(pattern, color, accent) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   textureCache.set(key, tex);
   return tex;
+}
+
+/** The canvas behind a pattern texture (used by tests/screenshots). */
+export function patternCanvas(pattern, color, accent) {
+  const t = patternTexture(pattern, color, accent);
+  return t ? t.image : null;
 }
 
 function partMaterial(part) {
@@ -285,6 +293,13 @@ function buildRiderBody(look) {
     const fore = box(0.075, 0.28, 0.075, skin);
     fore.position.y = -0.14;
     elbow.add(fore);
+    if (look.pads && look.pads.style !== 'none') {
+      const padMat = new THREE.MeshLambertMaterial({ color: look.pads.color });
+      padMat.name = 'pads';
+      const pad = box(0.1, 0.09, 0.1, padMat);
+      pad.position.set(0, -0.02, -0.01);
+      elbow.add(pad);
+    }
     arms.push({ shoulder, elbow, side: s });
   }
   const legs = [];
@@ -304,6 +319,13 @@ function buildRiderBody(look) {
     const foot = box(0.11, 0.06, 0.24, shoes);
     foot.position.set(0, -0.43, 0.05);
     knee.add(foot);
+    if (look.pads && look.pads.style !== 'none') {
+      const padMat = new THREE.MeshLambertMaterial({ color: look.pads.color });
+      padMat.name = 'pads';
+      const pad = box(0.14, look.pads.style === 'pro' ? 0.16 : 0.12, 0.08, padMat);
+      pad.position.set(0, -0.02, 0.06);
+      knee.add(pad);
+    }
     legs.push({ hip, knee, side: s });
   }
   root.userData = { hips, torso, head, helmetSlot, arms, legs, materials: { shirt, pants, skin, shoes } };
@@ -347,6 +369,11 @@ export function buildVehicleMesh(lookIn) {
   const rider = buildRiderBody(look);
   rider.position.y = vehicle.userData.deckTop;
   buildHelmet(look, rider.userData.helmetSlot);
+  // Start in the riding pose (skaters stand sideways, scooter riders hold the bars),
+  // so the shop preview matches what you see in game.
+  const kind = vehicle.userData.kind;
+  rider.rotation.set(0, kind === 'skateboard' ? -Math.PI / 2 : 0, 0);
+  setPose(rider, kind, { crouch: 0.15, lean: 0, leanFwd: 0, look: kind === 'skateboard' ? Math.PI / 2.4 : 0, push: 0, armsOut: 0, grab: false });
   group.add(boardPivot, rider);
   group.userData = { look, vehicle, boardPivot, rider };
   return group;
@@ -358,6 +385,13 @@ export function describeMesh(group) {
   const mats = group.userData.vehicle.userData.materials;
   for (const [slot, m] of Object.entries(mats)) out[slot] = { color: m.userData.partColor, pattern: m.userData.pattern };
   out.vehicle = group.userData.vehicle.userData.kind;
+  const look = group.userData.look;
+  out.outfit = { ...look.outfit };
+  out.helmet = look.helmet.style;
+  out.pads = look.pads.style;
+  out.trail = look.trail.style;
+  out.deckShape = look.parts.deck.shape || 'popsicle';
+  out.wheelSize = look.parts.wheels.size || 1;
   return out;
 }
 
@@ -390,7 +424,7 @@ function setPose(rider, kind, pose) {
     l.hip.rotation.set(-c * 0.9, 0, 0);
     l.knee.rotation.set(c * 1.7, 0, 0);
   }
-  torso.rotation.set(c * 0.35 + pose.leanFwd, 0, pose.lean);
+  torso.rotation.set(c * 0.35 + pose.leanFwd + (kind === 'scooter' ? 0.22 : 0), 0, pose.lean);
   head.rotation.set(-c * 0.3, pose.look, 0);
   if (kind === 'skateboard') {
     // Stand sideways: legs spread along the board (rider's local X).
@@ -422,8 +456,9 @@ function setPose(rider, kind, pose) {
       legs[1].knee.rotation.x = 0.3;
     }
     for (const a of arms) {
-      a.shoulder.rotation.set(-1.0 - c * 0.3 + (pose.noHands ? 2.4 : 0), 0, a.side * (0.12 + pose.armsOut * 0.8));
-      a.elbow.rotation.set(-0.5 + c * 0.2, 0, 0);
+      // Hands reach forward and down to the bar ends.
+      a.shoulder.rotation.set(-0.42 - c * 0.2 + (pose.noHands ? 2.4 : 0), 0, a.side * (0.16 + pose.armsOut * 0.8));
+      a.elbow.rotation.set(-0.12, 0, 0);
     }
   }
   if (pose.grab) {

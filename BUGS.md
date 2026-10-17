@@ -21,12 +21,13 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 14 | Fixed | E2E test (M5) |
 | 15 | Fixed | Code review (M6) |
 | 16 | Fixed | Screenshot check (M6) |
+| 17 | Fixed | Screenshot check (M7) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
 - **Cause:** operator precedence in `g.lineTo(x, y + (x / 16) % 2 === 0 ? y : y + 14)` — the ternary condition was `(y + ...) === 0`, which is always false.
 - **Fix:** `g.lineTo(x, (x / 16) % 2 === 0 ? y : y + 14)` in `src/rider/rider.js`.
-- **Proof:** see milestone 7 (shop preview screenshot of the zigzag pattern) — verified there.
+- **Proof:** milestone 7 pattern sheet (`__game.showPatterns()` screenshot) shows real zigzags; every pattern is visually distinct.
 
 ## 2. Per-frame allocations in the scooter flip pose
 - **Symptom:** none visible yet; would cause steady garbage growth during scooter flips.
@@ -117,3 +118,9 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** the tracker was absolutely positioned at a fixed offset, but the stats box above it is taller when the Pause button wraps.
 - **Fix:** the right-hand HUD boxes now stack in a flex column (`.hud-right`).
 - **Proof:** screenshot after the fix shows the tracker below the stats box; `e2e/quests.spec.js` checks the tracker text.
+
+## 17. Shop preview showed the rider in a stiff rest pose
+- **Symptom:** in the shop the skater faced forward instead of standing sideways, and the scooter rider's hands hung at their sides instead of holding the bars.
+- **Cause:** the riding pose was only applied by the per-frame in-game animation (`update()`); the preview renders the bare mesh.
+- **Fix:** `buildVehicleMesh` applies the riding pose when the model is built; the scooter arms/torso were re-tuned to reach the bars.
+- **Proof:** shop preview screenshots (skateboard sideways stance; scooter rider holding the bars).

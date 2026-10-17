@@ -9,6 +9,7 @@ export const DATA_FILES = {
   tricks: 'data/tricks.json',
   levels: 'data/levels.json',
   quests: 'data/quests.json',
+  catalog: 'data/catalog.json',
 };
 
 export async function loadGameData(readJson) {

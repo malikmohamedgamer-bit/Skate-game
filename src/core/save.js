@@ -27,6 +27,7 @@ export const STARTER_OWNED = Object.freeze([
   'fork_basic',
   'outfit_default',
   'helmet_none',
+  'pads_none',
   'trail_none',
 ]);
 
@@ -36,6 +37,7 @@ export const STARTER_EQUIPPED = Object.freeze({
   scooter: { deck: 'sdeck_basic', bars: 'bars_basic', wheels: 'swheels_basic', fork: 'fork_basic' },
   outfit: 'outfit_default',
   helmet: 'helmet_none',
+  pads: 'pads_none',
   trail: 'trail_none',
 });
 
@@ -179,7 +181,7 @@ export function normalizeSave(s, now = Date.now()) {
     if (e.vehicle === 'scooter' && out.owned.includes('vehicle_scooter')) out.equipped.vehicle = 'scooter';
     for (const v of ['skateboard', 'scooter'])
       if (isObj(e[v])) for (const slot of Object.keys(out.equipped[v])) if (typeof e[v][slot] === 'string' && out.owned.includes(e[v][slot])) out.equipped[v][slot] = e[v][slot];
-    for (const slot of ['outfit', 'helmet', 'trail']) if (typeof e[slot] === 'string' && out.owned.includes(e[slot])) out.equipped[slot] = e[slot];
+    for (const slot of ['outfit', 'helmet', 'pads', 'trail']) if (typeof e[slot] === 'string' && out.owned.includes(e[slot])) out.equipped[slot] = e[slot];
   }
   out.colors = {};
   if (isObj(s.colors))

@@ -111,3 +111,18 @@ Verified
 - Screenshots: quest log, HUD tracker (after layout fix).
 - Bugs: BUGS.md #15, #16.
 - `npx eslint .` → clean.
+
+## Milestone 7 — Customization and shop
+
+Added
+- `src/data/catalog.json`: 13 categories (boards & scooters; skateboard decks, trucks, wheels, grip tape; scooter decks, bars, wheels, forks; outfits, helmets, pads, trails), 49 items. Parts carry stat modifiers (decks → ollie, trucks/bars → turn rate, wheels → grip and speed, forks → grip, grip tape → trick bonus); outfits, helmets, pads and trails are cosmetic. 12 named colors (with an Okabe-Ito colorblind-safe subset) and 7 named patterns.
+- `src/game/customize.js` (pure): buy (balance checked first via `economy.spend`), equip (ownership + slot), stats from base + parts with clamps, stat deltas for previews, validated colors/patterns, contrast-based pattern accents, and the look object for the 3D model.
+- `src/ui/shop.js`: category tabs, item cards with price/owned/equipped text, Buy / Equip / Preview, hover/focus "try on", stat bars with ▲/▼ deltas, **live 3D preview of the real rider model** (one reused WebGL canvas, rotate buttons, auto-rotate off under reduced motion), color swatches by name with `aria-pressed`, custom color input, named pattern buttons.
+- Equipped gear is saved and applied in game (handling stats + rider look); the scooter is bought in the shop and changes the push style and tricks.
+- Rider model: knee/elbow pads; preview starts in the riding pose (BUGS.md #17).
+
+Verified
+- `npm test` → 193 tests, 193 pass (14 new: catalog coverage, starter loadout, stat effects, **cheapest item affordable with the starting balance**, a broke player can earn the cheapest item in one run, buy never goes negative across every item and many balances, equip rules, stats/clamps, colors, look).
+- `npx playwright test` → 29 passed. New: buying the Street Deck drops Bolts 150 → 70; Pro Model is refused with "Not enough Bolts"; Equip rebuilds the preview (deck color and pixel fingerprint change); color + pattern change the preview; the in-game rider and stats use the deck; everything survives a reload; buying/equipping the scooter switches vehicles; the shop works by keyboard.
+- Screenshots: shop with try-on deltas, skateboard (helmet, pads, hoodie) and scooter previews, pattern sheet (BUGS.md #1 verified).
+- `npx eslint .` → clean.

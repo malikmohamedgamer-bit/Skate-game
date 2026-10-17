@@ -21,10 +21,12 @@ import {
 } from './game/levels.js';
 import { buildMapScene } from './world/scene.js';
 import { buildCheckpointMeshes, buildObjectMeshes, buildPickupMeshes, choosePalette } from './world/objects-mesh.js';
-import { createRiderModel } from './rider/rider.js';
+import { createRiderModel, patternCanvas } from './rider/rider.js';
 import { createHud } from './ui/hud.js';
 import { createScreenManager, esc, showFreeRoam, showHelp, showLevelSelect, showMainMenu, showPause, showResults } from './ui/menu.js';
 import { showQuestLog, trackerItems } from './ui/quests-ui.js';
+import { shopPreview, showShop } from './ui/shop.js';
+import { buildLook, buyItem, computeStats, equipItem, itemById, setPartColor } from './game/customize.js';
 import { speedOf } from './physics/body.js';
 import { lenXZ, yawOf } from './physics/math.js';
 
@@ -172,10 +174,60 @@ function updateTracker() {
 }
 
 // ---------------------------------------------------------------------------
+// Shop
+// ---------------------------------------------------------------------------
+function shopCtx() {
+  const a11y = app.profile.settings.a11y;
+  return { profile: app.profile, catalog: app.data.catalog, vehicles: app.data.vehicles, reducedMotion: a11y.reducedMotion, colorblindOnly: a11y.colorblind };
+}
+
+function shopActions(back) {
+  return {
+    back,
+    announce,
+    buy(id) {
+      const r = buyItem(app.profile, app.data.catalog, id);
+      const item = itemById(app.data.catalog, id);
+      if (!r.ok) {
+        announce(r.reason === 'insufficient' ? `Not enough Bolts for ${item.name}. You need ${r.short} more.` : `${item.name} is already yours.`);
+        return shopCtx();
+      }
+      app.profile = r.profile;
+      markDirty();
+      flushSave();
+      sendQuestEvent({ type: 'itemBought', itemId: id, category: item.category, price: item.price });
+      announce(`Bought ${item.name} for ${item.price} Bolts. You have ${app.profile.bolts} Bolts left.`);
+      return shopCtx();
+    },
+    equip(id) {
+      const r = equipItem(app.profile, app.data.catalog, id);
+      if (r.ok) {
+        app.profile = r.profile;
+        markDirty();
+        flushSave();
+        announce(`Equipped ${itemById(app.data.catalog, id).name}.`);
+      }
+      return shopCtx();
+    },
+    setColor(key, change) {
+      const r = setPartColor(app.profile, app.data.catalog, key, change);
+      if (r.ok) {
+        app.profile = r.profile;
+        markDirty();
+        const c = app.data.catalog.colors.find((x) => x.hex.toLowerCase() === String(change.color || '').toLowerCase());
+        announce(change.pattern ? `Pattern: ${change.pattern}` : `Color: ${c ? c.name : change.color}`);
+      }
+      return shopCtx();
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Screen routing
 // ---------------------------------------------------------------------------
 function setScreen(name) {
   app.screen = name;
+  if (name !== 'menu') app.menuScreen = null;
   app.input.setEnabled(name === 'play');
   app.hud.show(name === 'play' || name === 'pause');
   if (app.loop) app.loop.setPaused(name !== 'play');
@@ -202,6 +254,9 @@ function go(name) {
       break;
     case 'quests':
       showQuestLog(app.screens, { profile: app.profile, data: app.data, day: refreshQuestsForToday() }, { back });
+      break;
+    case 'shop':
+      app.shopView = showShop(app.screens, shopCtx(), shopActions(back));
       break;
     default:
       // Quests, shop and settings screens are added in later milestones.
@@ -264,11 +319,13 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
   const vehicle = app.profile.equipped.vehicle || 'skateboard';
   const a11y = app.profile.settings.a11y;
   const map = app.data.maps[mapId];
+  const stats = computeStats(app.data.vehicles, app.data.catalog, app.profile, vehicle);
   const pickupIds = level ? new Set(levelPickupIds(level, map)) : null;
   const session = createSession({
     data: app.data,
     mapId,
     vehicle,
+    stats,
     spawnId,
     settings: { forgivingLandings: a11y.forgivingLandings, autoPush: a11y.autoPush },
     pickupFilter: pickupIds ? (p) => pickupIds.has(p.id) : null,
@@ -293,7 +350,7 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
     app.checkpointMeshes.setActive(0);
     app.sceneInfo.scene.add(app.checkpointMeshes.group);
   }
-  app.rider = createRiderModel({ vehicle });
+  app.rider = createRiderModel(buildLook(app.profile, app.data.catalog));
   app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
   if (!app.profile.visitedMaps.includes(mapId)) {
     app.profile.visitedMaps.push(mapId);
@@ -499,6 +556,7 @@ function render(_alpha, frameSeconds) {
   if (!s || !app.sceneInfo) {
     app.renderer.setClearColor('#11151c');
     app.renderer.clear();
+    if (app.screen === 'menu' && app.menuScreen === 'shop' && app.shopView) app.shopView.renderPreview(fdt);
     return;
   }
   const b = s.body;
@@ -587,6 +645,40 @@ window.__game = {
   },
   questsCompleted() {
     return app.questLog.slice();
+  },
+  /** Shop preview: the actual 3D model's parts/colors and a pixel fingerprint. */
+  shopPreview(angle = null) {
+    const pv = shopPreview();
+    if (!pv) return null;
+    if (angle !== null) pv.setAngle(angle);
+    pv.render(0, { reducedMotion: true });
+    return { model: pv.describe(), hash: pv.pixelHash() };
+  },
+  /** Debug: show every pattern texture (screenshot check of the pattern generator). */
+  showPatterns() {
+    const wrap = document.createElement('div');
+    wrap.id = 'pattern-debug';
+    wrap.style.cssText = 'position:fixed;inset:0;z-index:99;background:#222;display:flex;flex-wrap:wrap;gap:12px;padding:12px';
+    for (const p of app.data.catalog.patterns) {
+      const c = patternCanvas(p.id, '#d94a38', '#ffffff');
+      const fig = document.createElement('figure');
+      fig.style.cssText = 'margin:0;color:#fff;font:14px sans-serif';
+      if (c) {
+        const img = document.createElement('img');
+        img.src = c.toDataURL();
+        img.width = 128;
+        fig.appendChild(img);
+      }
+      fig.appendChild(document.createTextNode(' ' + p.name));
+      wrap.appendChild(fig);
+    }
+    document.body.appendChild(wrap);
+  },
+  riderLook() {
+    return app.rider ? app.rider.describe() : null;
+  },
+  sessionStats() {
+    return app.session ? { ...app.session.stats } : null;
   },
   /** Debug: override the clock (daily quest tests). Pass null to restore. */
   setNow(ms) {
