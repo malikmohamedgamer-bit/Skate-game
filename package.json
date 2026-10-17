@@ -1,0 +1,26 @@
+{
+  "name": "bolt-skate",
+  "version": "0.9.0",
+  "private": true,
+  "description": "Bolt Skate: a 3D skateboarding and scootering game for the browser (vanilla JS + Three.js).",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.js",
+    "start": "node scripts/serve.js",
+    "test": "node --test --test-reporter=spec \"tests/*.test.js\"",
+    "test:e2e": "playwright test",
+    "test:soak": "playwright test --config=playwright.soak.config.js",
+    "check:maps": "node scripts/check-reachability.js",
+    "lint": "eslint .",
+    "verify": "npm run lint && npm test && npm run check:maps && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.56.1",
+    "eslint": "9.39.5",
+    "globals": "17.13.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

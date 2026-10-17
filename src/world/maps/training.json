@@ -1,0 +1,16 @@
+{
+  "id": "training",
+  "name": "Training Lot",
+  "order": 0,
+  "description": "A flat, open parking lot. Learn to push, carve, ollie and spin.",
+  "theme": { "sky": "#a8d8ff", "fog": "#cfe9ff", "ground": "#7d838b", "accent": "#ffb000" },
+  "bounds": { "minX": -40, "maxX": 40, "minZ": -40, "maxZ": 40 },
+  "terrain": { "type": "flat" },
+  "spawns": [
+    { "id": "main", "x": 0, "z": -30, "rot": 0 },
+    { "id": "east", "x": 30, "z": 0, "rot": -90 }
+  ],
+  "objects": [],
+  "pickups": [],
+  "unlock": { "stars": 0 }
+}

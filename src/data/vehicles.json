@@ -1,0 +1,43 @@
+{
+  "_comment": "Base handling per vehicle type. Parts in catalog.json add modifiers on top of these. Speeds in m/s, rates in rad/s or deg/s as named.",
+  "skateboard": {
+    "name": "Skateboard",
+    "accel": 3.1,
+    "topSpeed": 11.0,
+    "turnRate": 2.6,
+    "grip": 9.0,
+    "jump": 5.7,
+    "weight": 1.0,
+    "trickBonus": 1.0,
+    "rollingFriction": 0.32,
+    "brakeDecel": 6.5,
+    "pushStyle": "coast",
+    "pushDuration": 0.38,
+    "pushCooldown": 0.2,
+    "spinRate": 620,
+    "flipRate": 800,
+    "boardSpinRate": 720,
+    "boardSpinUnit": 180,
+    "flipMode": "board"
+  },
+  "scooter": {
+    "name": "Kick Scooter",
+    "accel": 3.6,
+    "topSpeed": 10.0,
+    "turnRate": 3.1,
+    "grip": 11.0,
+    "jump": 5.4,
+    "weight": 1.25,
+    "trickBonus": 1.15,
+    "rollingFriction": 0.55,
+    "brakeDecel": 8.5,
+    "pushStyle": "kick",
+    "pushDuration": 0.16,
+    "pushCooldown": 0.42,
+    "spinRate": 560,
+    "flipRate": 560,
+    "boardSpinRate": 900,
+    "boardSpinUnit": 360,
+    "flipMode": "body"
+  }
+}
