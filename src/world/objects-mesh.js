@@ -387,3 +387,60 @@ export function buildObjectMeshes(world, { palette = PALETTES.default, shadows =
   };
   return root;
 }
+
+/** Bolt-shaped pickups. Returns { group, update(dt, reducedMotion), setTaken(id, taken) }. */
+export function buildPickupMeshes(pickups, { palette = PALETTES.default } = {}) {
+  const group = new THREE.Group();
+  group.name = 'pickups';
+  const shape = new THREE.Shape();
+  const pts = [
+    [0.05, 0.42],
+    [-0.2, 0.0],
+    [-0.02, 0.0],
+    [-0.1, -0.42],
+    [0.2, 0.06],
+    [0.02, 0.06],
+  ];
+  shape.moveTo(pts[0][0], pts[0][1]);
+  for (const [x, y] of pts.slice(1)) shape.lineTo(x, y);
+  shape.closePath();
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1 });
+  geo.center();
+  const mat = new THREE.MeshLambertMaterial({ color: palette.pickup, emissive: palette.pickup, emissiveIntensity: 0.35 });
+  const ringGeo = new THREE.TorusGeometry(0.42, 0.03, 6, 24);
+  const ringMat = new THREE.MeshBasicMaterial({ color: palette.pickup, transparent: true, opacity: 0.55 });
+  const byId = new Map();
+  for (const p of pickups) {
+    const holder = new THREE.Group();
+    holder.position.set(p.x, p.y, p.z);
+    const bolt = new THREE.Mesh(geo, mat);
+    bolt.castShadow = true;
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    holder.add(bolt, ring);
+    holder.userData = { baseY: p.y, phase: (p.x * 0.37 + p.z * 0.11) % (Math.PI * 2) };
+    group.add(holder);
+    byId.set(p.id, holder);
+  }
+  let t = 0;
+  return {
+    group,
+    update(dt, reducedMotion) {
+      t += dt;
+      for (const h of byId.values()) {
+        if (!h.visible) continue;
+        h.rotation.y = t * 1.6 + h.userData.phase;
+        h.position.y = h.userData.baseY + (reducedMotion ? 0 : Math.sin(t * 2 + h.userData.phase) * 0.08);
+      }
+    },
+    setTaken(id, taken) {
+      const h = byId.get(id);
+      if (h) h.visible = !taken;
+    },
+    dispose() {
+      geo.dispose();
+      mat.dispose();
+      ringGeo.dispose();
+      ringMat.dispose();
+    },
+  };
+}

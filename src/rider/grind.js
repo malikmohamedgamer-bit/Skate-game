@@ -75,7 +75,7 @@ export function startGrind(body, hit, trickData, vehicle, rng = Math.random) {
   placeOnRail(body, g);
   body.state = 'grind';
   body.grounded = false;
-  body.events.push({ type: 'grindStart', name: g.name, category: cat });
+  body.events.push({ type: 'grindStart', name: g.name, category: cat, rail: rail.id });
   return g;
 }
 

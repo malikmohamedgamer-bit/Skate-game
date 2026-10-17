@@ -1,0 +1,967 @@
+[
+  {
+    "mapId": "training",
+    "name": "Training Lot",
+    "cells": {
+      "open": 24770,
+      "reached": 24770,
+      "needsOllie": 3,
+      "obstacleTops": 24,
+      "percent": 100
+    },
+    "spawns": [
+      {
+        "id": "main",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "east",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "rail",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "platform",
+        "ok": true,
+        "reachable": true
+      }
+    ],
+    "ramps": [
+      {
+        "id": "kicker1",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "qp1",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "funbox1-ka",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "funbox1-kb",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      }
+    ],
+    "rails": [
+      {
+        "id": "rail1",
+        "kind": "rail",
+        "len": 16,
+        "ok": true
+      },
+      {
+        "id": "bench1-ledge",
+        "kind": "ledge",
+        "len": 3.7,
+        "ok": true
+      },
+      {
+        "id": "stairs1-railL",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "stairs1-railR",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "funbox1-rail",
+        "kind": "rail",
+        "len": 2.4,
+        "ok": true
+      }
+    ],
+    "pickups": [],
+    "checkpoints": [],
+    "issues": [],
+    "ok": true
+  },
+  {
+    "mapId": "neighborhood",
+    "name": "Maple Street",
+    "cells": {
+      "open": 39000,
+      "reached": 39000,
+      "needsOllie": 25,
+      "obstacleTops": 5116,
+      "percent": 100
+    },
+    "spawns": [
+      {
+        "id": "main",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "cross",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "north",
+        "ok": true,
+        "reachable": true
+      }
+    ],
+    "ramps": [
+      {
+        "id": "road-kicker1",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "road-kicker2",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "culdesac-qp",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      }
+    ],
+    "rails": [
+      {
+        "id": "porch-stairs-e2-railL",
+        "kind": "handrail",
+        "len": 1.52,
+        "ok": true
+      },
+      {
+        "id": "porch-stairs-e2-railR",
+        "kind": "handrail",
+        "len": 1.52,
+        "ok": true
+      },
+      {
+        "id": "porch-stairs-w3-railL",
+        "kind": "handrail",
+        "len": 1.52,
+        "ok": true
+      },
+      {
+        "id": "flatbar-1",
+        "kind": "rail",
+        "len": 12,
+        "ok": true
+      },
+      {
+        "id": "lawn-rail-w",
+        "kind": "rail",
+        "len": 14,
+        "ok": true
+      },
+      {
+        "id": "garden-ledge-ledge",
+        "kind": "ledge",
+        "len": 7.7,
+        "ok": true
+      },
+      {
+        "id": "busstop-bench-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      }
+    ],
+    "pickups": [
+      {
+        "id": "n-p1",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p2",
+        "ok": true,
+        "method": "via road-kicker1"
+      },
+      {
+        "id": "n-p3",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p4",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p5",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "n-p6",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p7",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p8",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p9",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "n-p10",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "n-p11",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p12",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "n-p13",
+        "ok": true,
+        "method": "ride"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "n-cp-north",
+        "ok": true
+      },
+      {
+        "id": "n-cp-cross-w",
+        "ok": true
+      },
+      {
+        "id": "n-cp-cross-e",
+        "ok": true
+      }
+    ],
+    "issues": [],
+    "ok": true
+  },
+  {
+    "mapId": "skatepark",
+    "name": "Concrete Jungle Skatepark",
+    "cells": {
+      "open": 31026,
+      "reached": 31026,
+      "needsOllie": 37,
+      "obstacleTops": 76,
+      "percent": 100
+    },
+    "spawns": [
+      {
+        "id": "main",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "bowl",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "halfpipe",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "stairs",
+        "ok": true,
+        "reachable": true
+      }
+    ],
+    "ramps": [
+      {
+        "id": "big-bowl",
+        "type": "bowl",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "small-bowl",
+        "type": "bowl",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "halfpipe-a",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "halfpipe-b",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "north-qp",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "funbox-ka",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "funbox-kb",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "kicker-a",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "kicker-b",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "kicker-c",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "stair-bank",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      }
+    ],
+    "rails": [
+      {
+        "id": "funbox-rail",
+        "kind": "rail",
+        "len": 3.4,
+        "ok": true
+      },
+      {
+        "id": "rail-a",
+        "kind": "rail",
+        "len": 14,
+        "ok": true
+      },
+      {
+        "id": "rail-b",
+        "kind": "rail",
+        "len": 16,
+        "ok": true
+      },
+      {
+        "id": "rail-c",
+        "kind": "rail",
+        "len": 12,
+        "ok": true
+      },
+      {
+        "id": "ledge-a-ledge",
+        "kind": "ledge",
+        "len": 9.7,
+        "ok": true
+      },
+      {
+        "id": "ledge-b-ledge",
+        "kind": "ledge",
+        "len": 7.7,
+        "ok": true
+      },
+      {
+        "id": "stair-set-railL",
+        "kind": "handrail",
+        "len": 2.39,
+        "ok": true
+      },
+      {
+        "id": "stair-set-railR",
+        "kind": "handrail",
+        "len": 2.39,
+        "ok": true
+      },
+      {
+        "id": "bench-a-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "bench-b-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      }
+    ],
+    "pickups": [
+      {
+        "id": "s-p1",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p2",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p3",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p4",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p5",
+        "ok": true,
+        "method": "via kicker-a"
+      },
+      {
+        "id": "s-p6",
+        "ok": true,
+        "method": "via kicker-b"
+      },
+      {
+        "id": "s-p7",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "s-p8",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "s-p9",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p10",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p11",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p12",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p13",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "s-p14",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "s-p15",
+        "ok": true,
+        "method": "ride"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "s-cp-bowl",
+        "ok": true
+      },
+      {
+        "id": "s-cp-stairs",
+        "ok": true
+      },
+      {
+        "id": "s-cp-north",
+        "ok": true
+      }
+    ],
+    "issues": [],
+    "ok": true
+  },
+  {
+    "mapId": "plaza",
+    "name": "Town Plaza",
+    "cells": {
+      "open": 30736,
+      "reached": 30736,
+      "needsOllie": 71,
+      "obstacleTops": 280,
+      "percent": 100
+    },
+    "spawns": [
+      {
+        "id": "main",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "east",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "terrace",
+        "ok": true,
+        "reachable": true
+      }
+    ],
+    "ramps": [
+      {
+        "id": "west-bank",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "plaza-kicker",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      }
+    ],
+    "rails": [
+      {
+        "id": "south-stairs-railL",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "south-stairs-railR",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "east-stairs-railL",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "east-stairs-railR",
+        "kind": "handrail",
+        "len": 1.9,
+        "ok": true
+      },
+      {
+        "id": "fountain-ledge",
+        "kind": "ledge",
+        "len": 4.7,
+        "ok": true
+      },
+      {
+        "id": "terrace-bench-w-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "terrace-bench-e-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "north-ledge-ledge",
+        "kind": "ledge",
+        "len": 13.7,
+        "ok": true
+      },
+      {
+        "id": "plaza-bench-w-ledge",
+        "kind": "ledge",
+        "len": 2.9,
+        "ok": true
+      },
+      {
+        "id": "plaza-bench-e-ledge",
+        "kind": "ledge",
+        "len": 2.9,
+        "ok": true
+      },
+      {
+        "id": "ne-stairs-railL",
+        "kind": "handrail",
+        "len": 1.14,
+        "ok": true
+      },
+      {
+        "id": "ne-stairs-railR",
+        "kind": "handrail",
+        "len": 1.14,
+        "ok": true
+      },
+      {
+        "id": "west-rail",
+        "kind": "rail",
+        "len": 40,
+        "ok": true
+      },
+      {
+        "id": "kink-rail",
+        "kind": "rail",
+        "len": 12,
+        "ok": true
+      }
+    ],
+    "pickups": [
+      {
+        "id": "pz-p1",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p2",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p3",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p4",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p5",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p6",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p7",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p8",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p9",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p10",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "pz-p11",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "pz-p12",
+        "ok": true,
+        "method": "via plaza-kicker"
+      },
+      {
+        "id": "pz-p13",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "pz-p14",
+        "ok": true,
+        "method": "ride"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "pz-cp-terrace",
+        "ok": true
+      },
+      {
+        "id": "pz-cp-ne",
+        "ok": true
+      },
+      {
+        "id": "pz-cp-west",
+        "ok": true
+      }
+    ],
+    "issues": [],
+    "ok": true
+  },
+  {
+    "mapId": "downtown",
+    "name": "Downtown Hills",
+    "cells": {
+      "open": 47160,
+      "reached": 47160,
+      "needsOllie": 28,
+      "obstacleTops": 6712,
+      "percent": 100
+    },
+    "spawns": [
+      {
+        "id": "main",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "bottom",
+        "ok": true,
+        "reachable": true
+      },
+      {
+        "id": "terrace",
+        "ok": true,
+        "reachable": true
+      }
+    ],
+    "ramps": [
+      {
+        "id": "drop-kicker",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "plaza-kicker-e",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "plaza-kicker-w",
+        "type": "kicker",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      },
+      {
+        "id": "south-qp",
+        "type": "quarter",
+        "ok": true,
+        "approach": true,
+        "launch": true
+      }
+    ],
+    "rails": [
+      {
+        "id": "uptown-ledge-ledge",
+        "kind": "ledge",
+        "len": 9.7,
+        "ok": true
+      },
+      {
+        "id": "uptown-rail",
+        "kind": "rail",
+        "len": 16,
+        "ok": true
+      },
+      {
+        "id": "uptown-bench-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "terrace-rail",
+        "kind": "rail",
+        "len": 5,
+        "ok": true
+      },
+      {
+        "id": "terrace-bench-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "plaza-rail-w",
+        "kind": "rail",
+        "len": 15,
+        "ok": true
+      },
+      {
+        "id": "plaza-rail-e",
+        "kind": "rail",
+        "len": 15,
+        "ok": true
+      },
+      {
+        "id": "plaza-bench-ledge",
+        "kind": "ledge",
+        "len": 2.7,
+        "ok": true
+      },
+      {
+        "id": "dock-stairs-railL",
+        "kind": "handrail",
+        "len": 2.39,
+        "ok": true
+      },
+      {
+        "id": "dock-stairs-railR",
+        "kind": "handrail",
+        "len": 2.39,
+        "ok": true
+      }
+    ],
+    "pickups": [
+      {
+        "id": "d-p1",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p2",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "d-p3",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p4",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p5",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p6",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p7",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "d-p8",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p9",
+        "ok": true,
+        "method": "via plaza-kicker-e"
+      },
+      {
+        "id": "d-p10",
+        "ok": true,
+        "method": "ollie"
+      },
+      {
+        "id": "d-p11",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p12",
+        "ok": true,
+        "method": "ride"
+      },
+      {
+        "id": "d-p13",
+        "ok": true,
+        "method": "ride"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "d-cp-terrace",
+        "ok": true
+      },
+      {
+        "id": "d-cp-bottom",
+        "ok": true
+      },
+      {
+        "id": "d-cp-uptown",
+        "ok": true
+      }
+    ],
+    "issues": [],
+    "ok": true
+  }
+]

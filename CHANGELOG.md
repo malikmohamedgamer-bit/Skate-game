@@ -58,3 +58,21 @@ Verified
 - Screenshot: HUD shows score, "Combo 2 · x1.5", "✔ Clean Kickflip +399 · x1.5", Bolts.
 - Bug found and fixed: BUGS.md #8 (grind Bolt float accumulation).
 - `npx eslint .` → clean.
+
+## Milestone 4 — Maps and objects
+
+Added
+- Four themed JSON maps (plus the training lot): `neighborhood` (Maple Street: road, curbed sidewalks with driveway gaps, houses, porch stairs with handrails, parked cars, kickers, cul-de-sac mini ramp), `skatepark` (two bowls, half pipe, quarter pipe, funbox, kickers, rails incl. a one-way rail, ledges, manual pad, stair set with bank), `plaza` (raised terrace with stairs and a bank, fountain ledge, benches, planters, statue, terrace with 3-stair set, long rail), `downtown` (7 m hill from uptown, terrace crest, jump bump, kickers, quarter pipe, loading-dock stairs). Each has bounds, terrain, spawns, objects, pickups and checkpoints. Maps are listed in `src/world/maps/index.json`.
+- Pickups: bolt meshes (bob disabled under reduced motion), collected by passing within 0.8 m of the rider's center, 10 Bolts each, once per run; `pickupFilter` for level-specific sets; high pickups name the ramp they are reached from (`via`).
+- Convex-crest launches (`crestLaunch`): riders leave the ground over hill tops when v²κ > g.
+- `src/world/reach.js` + `scripts/check-reachability.js` (`npm run check:maps`): grid flood fill with the physics step/angle/ollie rules, then real simulation of a launch from every ramp, a grind on every rail and a launch through every `via` pickup. Report saved to `reports/reachability.txt` / `.json`.
+- Title screen lists every map for free roam; visited maps are saved.
+
+Verified
+- `npm run check:maps` → 5/5 maps pass: 100% of rideable ground reached on every map; spawns 17/17, ramps launched 24/24, rails grinded 45/45, pickups 67/67, checkpoints 15/15 (full output in `reports/reachability.txt`).
+- The checker itself is tested against broken maps (`tests/reach.test.js`): a 3.5 m rail, a spawn sealed in a doorless room, a walled-in kicker, a 6 m pickup and walled stairs are all reported as failures.
+- `npm test` → 134 tests, 134 pass.
+- `npx playwright test` → 18 passed (each map loads from the menu, renders, is rideable with W, stays in bounds; a pickup adds 10 Bolts and the HUD updates).
+- Screenshots of all four maps checked (overview + spawn view).
+- Bugs found and fixed: BUGS.md #9, #10.
+- `npx eslint .` → clean.

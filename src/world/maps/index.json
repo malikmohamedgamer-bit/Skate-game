@@ -1,4 +1,4 @@
 {
   "_comment": "Map manifest. Add the file name (without .json) of a new map here.",
-  "maps": ["training"]
+  "maps": ["training", "neighborhood", "skatepark", "plaza", "downtown"]
 }

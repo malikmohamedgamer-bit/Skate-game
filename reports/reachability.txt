@@ -1,0 +1,43 @@
+
+== Training Lot (training) PASS  [0.2 s]
+   rideable area  : 100% reached (24770/24770 cells of 0.5 m; 3 reached by ollieing up; 24 obstacle-top cells excluded)
+   spawns         : 4/4  main, east, rail, platform
+   ramps launched : 4/4  kicker1, qp1, funbox1-ka, funbox1-kb
+   rails grinded  : 5/5  rail1, bench1-ledge, stairs1-railL, stairs1-railR, funbox1-rail
+   pickups        : 0/0  
+   checkpoints    : 0/0
+
+== Maple Street (neighborhood) PASS  [0.3 s]
+   rideable area  : 100% reached (39000/39000 cells of 0.5 m; 25 reached by ollieing up; 5116 obstacle-top cells excluded)
+   spawns         : 3/3  main, cross, north
+   ramps launched : 3/3  road-kicker1, road-kicker2, culdesac-qp
+   rails grinded  : 7/7  porch-stairs-e2-railL, porch-stairs-e2-railR, porch-stairs-w3-railL, flatbar-1, lawn-rail-w, garden-ledge-ledge, busstop-bench-ledge
+   pickups        : 13/13  n-p2:via road-kicker1, n-p5:ollie, n-p9:ollie, n-p10:ollie
+   checkpoints    : 3/3
+
+== Concrete Jungle Skatepark (skatepark) PASS  [0.2 s]
+   rideable area  : 100% reached (31026/31026 cells of 0.5 m; 37 reached by ollieing up; 76 obstacle-top cells excluded)
+   spawns         : 4/4  main, bowl, halfpipe, stairs
+   ramps launched : 11/11  big-bowl, small-bowl, halfpipe-a, halfpipe-b, north-qp, funbox-ka, funbox-kb, kicker-a, kicker-b, kicker-c, stair-bank
+   rails grinded  : 10/10  funbox-rail, rail-a, rail-b, rail-c, ledge-a-ledge, ledge-b-ledge, stair-set-railL, stair-set-railR, bench-a-ledge, bench-b-ledge
+   pickups        : 15/15  s-p5:via kicker-a, s-p6:via kicker-b, s-p7:ollie, s-p8:ollie, s-p13:ollie
+   checkpoints    : 3/3
+
+== Town Plaza (plaza) PASS  [0.1 s]
+   rideable area  : 100% reached (30736/30736 cells of 0.5 m; 71 reached by ollieing up; 280 obstacle-top cells excluded)
+   spawns         : 3/3  main, east, terrace
+   ramps launched : 2/2  west-bank, plaza-kicker
+   rails grinded  : 14/14  south-stairs-railL, south-stairs-railR, east-stairs-railL, east-stairs-railR, fountain-ledge, terrace-bench-w-ledge, terrace-bench-e-ledge, north-ledge-ledge, plaza-bench-w-ledge, plaza-bench-e-ledge, ne-stairs-railL, ne-stairs-railR, west-rail, kink-rail
+   pickups        : 14/14  pz-p10:ollie, pz-p11:ollie, pz-p12:via plaza-kicker
+   checkpoints    : 3/3
+
+== Downtown Hills (downtown) PASS  [0.6 s]
+   rideable area  : 100% reached (47160/47160 cells of 0.5 m; 28 reached by ollieing up; 6712 obstacle-top cells excluded)
+   spawns         : 3/3  main, bottom, terrace
+   ramps launched : 4/4  drop-kicker, plaza-kicker-e, plaza-kicker-w, south-qp
+   rails grinded  : 10/10  uptown-ledge-ledge, uptown-rail, uptown-bench-ledge, terrace-rail, terrace-bench-ledge, plaza-rail-w, plaza-rail-e, plaza-bench-ledge, dock-stairs-railL, dock-stairs-railR
+   pickups        : 13/13  d-p2:ollie, d-p7:ollie, d-p9:via plaza-kicker-e, d-p10:ollie
+   checkpoints    : 3/3
+
+5/5 maps pass reachability (1.3 s).
+JSON report written to reports/reachability.json

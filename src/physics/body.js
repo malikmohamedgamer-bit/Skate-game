@@ -199,7 +199,7 @@ export function stepBody(b, world, stats, phys, input, dt) {
   }
   // Ground contact.
   if (b.grounded) {
-    groundContact(b, world, phys);
+    groundContact(b, world, phys, dt);
   } else {
     airContact(b, world, phys, prevPos);
   }
@@ -313,11 +313,28 @@ function stepAirForces(b, stats, phys, dt) {
   }
 }
 
-function groundContact(b, world, phys) {
+/**
+ * Convex-crest launch test: leaving a hill top when the required centripetal
+ * acceleration (v^2 * curvature) exceeds what gravity can provide.
+ */
+export function crestLaunch(oldN, newN, vel, dt, gravity) {
+  const sp = len(vel);
+  if (sp < 1) return false;
+  const vd = { x: vel.x / sp, y: vel.y / sp, z: vel.z / sp };
+  const bend = dot(newN, vd) - dot(oldN, vd); // > 0: the ground falls away ahead (convex)
+  if (bend <= 1e-6) return false;
+  const kappa = bend / (sp * dt);
+  return sp * sp * kappa > gravity * newN.y;
+}
+
+function groundContact(b, world, phys, dt) {
   const g = groundAt(world, b.pos.x, b.pos.z, b.pos.y + phys.stepUp);
   const gap = b.pos.y - g.h;
   const vRel = dot(b.vel, g.n);
-  if (b.state !== 'bail' && (gap > phys.snapDown || (vRel > phys.launchNormalSpeed && gap > -0.02))) {
+  if (
+    b.state !== 'bail' &&
+    (gap > phys.snapDown || (vRel > phys.launchNormalSpeed && gap > -0.02) || (gap > -0.05 && crestLaunch(b.normal, g.n, b.vel, dt, phys.gravity)))
+  ) {
     goAirborne(b, false, phys);
     return;
   }

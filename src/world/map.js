@@ -55,7 +55,7 @@ export function normalizeMap(raw) {
     const id = p.id || `pickup${i}`;
     if (ids.has(id)) throw new MapError(`${ctx}: duplicate pickup id "${id}"`);
     ids.add(id);
-    return { id, x: num(p.x, `pickups[${i}].x`, ctx), z: num(p.z, `pickups[${i}].z`, ctx), y: p.y ?? 1.0, tag: p.tag || null };
+    return { id, x: num(p.x, `pickups[${i}].x`, ctx), z: num(p.z, `pickups[${i}].z`, ctx), y: p.y ?? 1.0, tag: p.tag || null, via: p.via || null };
   });
   const checkpoints = (raw.checkpoints || []).map((c, i) => ({
     id: c.id || `cp${i}`,

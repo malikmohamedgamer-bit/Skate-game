@@ -1,0 +1,86 @@
+{
+  "id": "neighborhood",
+  "name": "Maple Street",
+  "order": 1,
+  "description": "A quiet neighborhood street: curbs, driveways, porch stairs, parked cars and a mini ramp at the cul-de-sac.",
+  "theme": { "sky": "#9fd0ff", "fog": "#d6ecff", "ground": "#6f747b", "accent": "#ffb000" },
+  "bounds": { "minX": -48, "maxX": 48, "minZ": -60, "maxZ": 60 },
+  "terrain": { "type": "flat" },
+  "unlock": { "stars": 0 },
+  "spawns": [
+    { "id": "main", "x": 0, "z": -54, "rot": 0 },
+    { "id": "cross", "x": -40, "z": 0, "rot": 90 },
+    { "id": "north", "x": 0, "z": 50, "rot": 180 }
+  ],
+  "objects": [
+    { "id": "walk-e1", "type": "curb", "x": 8, "z": -46, "w": 4, "d": 24, "h": 0.15 },
+    { "id": "walk-e2", "type": "curb", "x": 8, "z": -17.5, "w": 4, "d": 25, "h": 0.15 },
+    { "id": "walk-e3", "type": "curb", "x": 8, "z": 17.5, "w": 4, "d": 25, "h": 0.15 },
+    { "id": "walk-e4", "type": "curb", "x": 8, "z": 46, "w": 4, "d": 24, "h": 0.15 },
+    { "id": "walk-w1", "type": "curb", "x": -8, "z": -31.5, "w": 4, "d": 53, "h": 0.15 },
+    { "id": "walk-w2", "type": "curb", "x": -8, "z": 11.5, "w": 4, "d": 13, "h": 0.15 },
+    { "id": "walk-w3", "type": "curb", "x": -8, "z": 40, "w": 4, "d": 36, "h": 0.15 },
+
+    { "id": "house-e1", "type": "building", "x": 28, "z": -46, "w": 14, "d": 11, "h": 6, "color": "#d8c3a5" },
+    { "id": "house-e2", "type": "building", "x": 28, "z": -18, "w": 14, "d": 11, "h": 6, "color": "#b9d0c5" },
+    { "id": "house-e3", "type": "building", "x": 28, "z": 20, "w": 14, "d": 11, "h": 6, "color": "#e3b5a4" },
+    { "id": "house-e4", "type": "building", "x": 28, "z": 46, "w": 14, "d": 11, "h": 6, "color": "#c9c3e0" },
+    { "id": "house-w1", "type": "building", "x": -28, "z": -44, "w": 14, "d": 11, "h": 6, "color": "#e0d6a8" },
+    { "id": "house-w2", "type": "building", "x": -28, "z": -20, "w": 14, "d": 11, "h": 6, "color": "#a9c4de" },
+    { "id": "house-w3", "type": "building", "x": -28, "z": 22, "w": 14, "d": 11, "h": 6, "color": "#d6b7c9" },
+    { "id": "house-w4", "type": "building", "x": -28, "z": 46, "w": 14, "d": 11, "h": 6, "color": "#c5d6a9" },
+
+    { "id": "porch-e2", "type": "platform", "x": 19.5, "z": -18, "w": 3, "d": 5, "h": 0.68 },
+    { "id": "porch-stairs-e2", "type": "stairs", "x": 17.32, "z": -18, "rot": -90, "w": 2.6, "steps": 4, "rise": 0.17, "run": 0.34, "top": 0, "rails": "both" },
+    { "id": "porch-w3", "type": "platform", "x": -19.5, "z": 22, "w": 3, "d": 5, "h": 0.68 },
+    { "id": "porch-stairs-w3", "type": "stairs", "x": -17.32, "z": 22, "rot": 90, "w": 2.6, "steps": 4, "rise": 0.17, "run": 0.34, "top": 0, "rails": "left" },
+
+    { "id": "car-1", "type": "car", "x": 4.2, "z": -22, "w": 1.9, "d": 4.4, "h": 1.5, "color": "#c43c3c" },
+    { "id": "car-2", "type": "car", "x": -4.2, "z": 28, "w": 1.9, "d": 4.4, "h": 1.5, "color": "#3c6fc4" },
+    { "id": "car-3", "type": "car", "x": 4.2, "z": 40, "w": 1.9, "d": 4.4, "h": 1.5, "color": "#e0e0e0" },
+
+    { "id": "road-kicker1", "type": "kicker", "x": 0, "z": -36, "w": 2.4, "d": 2.2, "h": 0.8 },
+    { "id": "road-kicker2", "type": "kicker", "x": -1.5, "z": 12, "w": 2.4, "d": 2.0, "h": 0.6 },
+    { "id": "culdesac-qp", "type": "quarter", "x": 0, "z": 58, "w": 12, "r": 2.8, "angle": 72, "deck": 1.2 },
+
+    { "id": "flatbar-1", "type": "rail", "x1": 13, "z1": -40, "x2": 13, "z2": -52, "h": 0.4 },
+    { "id": "lawn-rail-w", "type": "rail", "x1": -13, "z1": 30, "x2": -13, "z2": 44, "h": 0.45 },
+    { "id": "garden-ledge", "type": "ledge", "x": 13, "z": 40, "w": 0.5, "d": 8, "h": 0.5, "grind": true },
+    { "id": "busstop-bench", "type": "bench", "x": -8.8, "z": -15, "y": 0.15, "w": 0.6, "d": 3, "h": 0.45, "grind": true },
+
+    { "id": "mailbox-1", "type": "block", "x": 9.6, "z": -26, "y": 0.15, "w": 0.4, "d": 0.4, "h": 1.1, "color": "#4b5bd6" },
+    { "id": "mailbox-2", "type": "block", "x": 9.6, "z": 26, "y": 0.15, "w": 0.4, "d": 0.4, "h": 1.1, "color": "#4b5bd6" },
+    { "id": "mailbox-3", "type": "block", "x": -9.6, "z": 32, "y": 0.15, "w": 0.4, "d": 0.4, "h": 1.1, "color": "#4b5bd6" },
+    { "id": "hedge-1", "type": "planter", "x": 16, "z": -32, "w": 8, "d": 0.8, "h": 0.8 },
+    { "id": "hedge-2", "type": "planter", "x": -16, "z": -8, "w": 8, "d": 0.8, "h": 0.8 },
+    { "id": "hedge-3", "type": "planter", "x": 16, "z": 32, "w": 8, "d": 0.8, "h": 0.8 },
+    { "id": "tree-1", "type": "tree", "x": 15, "z": -8, "w": 0.5, "d": 0.5, "h": 2.6 },
+    { "id": "tree-2", "type": "tree", "x": -15, "z": 2, "w": 0.5, "d": 0.5, "h": 2.6 },
+    { "id": "tree-3", "type": "tree", "x": 15, "z": 10, "w": 0.5, "d": 0.5, "h": 2.6 },
+    { "id": "tree-4", "type": "tree", "x": -15, "z": -38, "w": 0.5, "d": 0.5, "h": 2.6 },
+    { "id": "tree-5", "type": "tree", "x": 16, "z": 52, "w": 0.5, "d": 0.5, "h": 2.6 },
+    { "id": "lamp-1", "type": "lamp", "x": -9.5, "z": -50, "y": 0.15, "w": 0.25, "d": 0.25, "h": 4 },
+    { "id": "lamp-2", "type": "lamp", "x": 9.5, "z": 0, "w": 0.25, "d": 0.25, "h": 4 },
+    { "id": "lamp-3", "type": "lamp", "x": -9.5, "z": 50, "y": 0.15, "w": 0.25, "d": 0.25, "h": 4 }
+  ],
+  "pickups": [
+    { "id": "n-p1", "x": 0, "z": -46, "y": 1.0 },
+    { "id": "n-p2", "x": 0, "z": -32.5, "y": 2.6, "via": "road-kicker1" },
+    { "id": "n-p3", "x": 8, "z": -12, "y": 1.0 },
+    { "id": "n-p4", "x": -8, "z": -40, "y": 1.0 },
+    { "id": "n-p5", "x": 13, "z": -46, "y": 1.9 },
+    { "id": "n-p6", "x": 0, "z": 0, "y": 1.0 },
+    { "id": "n-p7", "x": -30, "z": 0, "y": 1.0 },
+    { "id": "n-p8", "x": 30, "z": 0, "y": 1.0 },
+    { "id": "n-p9", "x": -1.5, "z": 15.5, "y": 2.2, "via": "road-kicker2" },
+    { "id": "n-p10", "x": -13, "z": 38, "y": 1.9 },
+    { "id": "n-p11", "x": 0, "z": 52, "y": 1.0 },
+    { "id": "n-p12", "x": 13, "z": 40, "y": 1.6 },
+    { "id": "n-p13", "x": 19.5, "z": -18, "y": 1.0 }
+  ],
+  "checkpoints": [
+    { "id": "n-cp-north", "x": 0, "z": 50, "radius": 4 },
+    { "id": "n-cp-cross-w", "x": -38, "z": 0, "radius": 4 },
+    { "id": "n-cp-cross-e", "x": 38, "z": 0, "radius": 4 }
+  ]
+}

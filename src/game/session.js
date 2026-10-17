@@ -3,7 +3,8 @@
 // Three.js, so it also runs under Node (tests, map checks, soak).
 
 import { bail, createBody, facesBackward, headingErrorMod180, respawn, settleLanding, speedOf, stepBody } from '../physics/body.js';
-import { buildWorld, insideBounds } from '../physics/collide.js';
+import { buildWorld, insideBounds, topAt } from '../physics/collide.js';
+import { PICKUP_BOLTS } from './economy.js';
 import { DEG, lenXZ, mulberry32 } from '../physics/math.js';
 import { spawnById } from '../world/map.js';
 import { createAirTricks, describeTrick, evaluateLanding, releaseGrab, stepAirTricks } from '../rider/tricks.js';
@@ -17,7 +18,21 @@ export function landingRollDeg(normal, yaw) {
   return Math.asin(Math.min(1, side)) / DEG;
 }
 
-export function createSession({ data, mapId, vehicle = 'skateboard', stats = null, settings = {}, spawnId = null, seed = 1234 }) {
+/** Pickups are collected when the rider's body center passes within this distance. */
+export const PICKUP_RADIUS = 0.8;
+/** Height of the rider's body center above the feet. */
+export const RIDER_CENTER = 0.9;
+
+export function createSession({
+  data,
+  mapId,
+  vehicle = 'skateboard',
+  stats = null,
+  settings = {},
+  spawnId = null,
+  seed = 1234,
+  pickupFilter = null,
+}) {
   const map = data.maps[mapId];
   if (!map) throw new Error(`Unknown map ${mapId}`);
   const phys = data.physics;
@@ -47,9 +62,30 @@ export function createSession({ data, mapId, vehicle = 'skateboard', stats = nul
     lastTrick: null,
     stats2: { maxSpeed: 0, distance: 0, outOfBounds: 0, ticks: 0, tricks: 0, bails: 0, grindTime: 0, grindDistance: 0, airTime: 0 },
     lastInput: null,
+    pickups: map.pickups
+      .filter((p) => !pickupFilter || pickupFilter(p))
+      .map((p) => ({ id: p.id, x: p.x, z: p.z, y: topAt(world, p.x, p.z) + p.y, taken: false })),
   };
 
   const emit = (e) => s.events.push(e);
+
+  function collectPickups() {
+    const cx = body.pos.x;
+    const cy = body.pos.y + RIDER_CENTER;
+    const cz = body.pos.z;
+    const r2 = PICKUP_RADIUS * PICKUP_RADIUS;
+    for (const p of s.pickups) {
+      if (p.taken) continue;
+      const dx = p.x - cx;
+      const dz = p.z - cz;
+      if (dx * dx + dz * dz > 4) continue;
+      const dy = p.y - cy;
+      if (dx * dx + dy * dy + dz * dz <= r2) {
+        p.taken = true;
+        emit({ type: 'pickup', id: p.id, value: PICKUP_BOLTS });
+      }
+    }
+  }
 
   function startAir(opts) {
     s.air = createAirTricks(opts);
@@ -200,6 +236,7 @@ export function createSession({ data, mapId, vehicle = 'skateboard', stats = nul
       tryEnterGrind(prevPos);
     }
 
+    if (s.pickups.length) collectPickups();
     s.stats2.distance += lenXZ({ x: body.pos.x - prevPos.x, y: 0, z: body.pos.z - prevPos.z });
     const sp = speedOf(body);
     if (sp > s.stats2.maxSpeed) s.stats2.maxSpeed = sp;

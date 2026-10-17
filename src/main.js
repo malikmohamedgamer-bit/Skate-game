@@ -9,7 +9,7 @@ import { createSession } from './game/session.js';
 import { applyEvent, createRun, finishRun, tickRun } from './game/progression.js';
 import { comboMultiplier } from './game/scoring.js';
 import { buildMapScene } from './world/scene.js';
-import { buildObjectMeshes, choosePalette } from './world/objects-mesh.js';
+import { buildObjectMeshes, buildPickupMeshes, choosePalette } from './world/objects-mesh.js';
 import { createRiderModel } from './rider/rider.js';
 import { createHud } from './ui/hud.js';
 import { speedOf } from './physics/body.js';
@@ -134,13 +134,16 @@ function showTitle() {
         <h1 id="title-h" class="title"><span class="bolt-mark" aria-hidden="true">⚡</span> Bolt Skate</h1>
         <p class="subtitle">Skate and scoot through the streets.</p>
         <p><span aria-hidden="true">⚡</span> <span class="bolts" id="menu-bolts">${app.profile.bolts}</span> Bolts</p>
-        <ul class="menu-list">
-          <li><button class="btn primary" id="btn-start"><span class="icon" aria-hidden="true">▶</span>Free roam</button></li>
+        <h2>Free roam</h2>
+        <ul class="menu-list" id="map-list">
+          ${app.data.mapOrder
+            .map((id, i) => `<li><button class="btn${i === 0 ? ' primary' : ''}" data-map="${id}"><span class="icon" aria-hidden="true">▶</span>${app.data.maps[id].name}</button></li>`)
+            .join('')}
         </ul>
       </div>
     </div>`;
-  $('#btn-start').addEventListener('click', () => startSession({ mapId: 'training' }));
-  $('#btn-start').focus();
+  for (const b of document.querySelectorAll('#map-list [data-map]')) b.addEventListener('click', () => startSession({ mapId: b.dataset.map }));
+  document.querySelector('#map-list button').focus();
 }
 
 function onPauseKey() {
@@ -196,8 +199,14 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
     shadows: app.profile.settings.graphics.shadows,
     objectMeshes: buildObjectMeshes(session.world, { palette, shadows: app.profile.settings.graphics.shadows }),
   });
+  app.pickupMeshes = buildPickupMeshes(session.pickups, { palette });
+  app.sceneInfo.scene.add(app.pickupMeshes.group);
   app.rider = createRiderModel({ vehicle });
   app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
+  if (!app.profile.visitedMaps.includes(mapId)) {
+    app.profile.visitedMaps.push(mapId);
+    markDirty();
+  }
   app.cameraRig.mode = app.profile.settings.camera.mode;
   app.cameraRig.snap();
   app.loop.setTimeScale(a11y.gameSpeed);
@@ -216,6 +225,8 @@ function endSession() {
   }
   if (app.sceneInfo) app.sceneInfo.dispose();
   if (app.rider) app.rider.dispose();
+  if (app.pickupMeshes) app.pickupMeshes.dispose();
+  app.pickupMeshes = null;
   app.sceneInfo = null;
   app.rider = null;
   app.session = null;
@@ -242,6 +253,7 @@ function tick(dt) {
 
 function handleGameEvent(e) {
   if (e.type === 'land') landedThisFrame = true;
+  if (e.type === 'pickup' && app.pickupMeshes) app.pickupMeshes.setTaken(e.id, true);
   const notes = applyEvent(app.run, app.profile, e);
   for (const n of notes) notify(n);
   if (notes.length) markDirty();
@@ -258,6 +270,8 @@ function notify(n) {
     app.hud.setScore(sc.score, 0, 1);
   } else if (n.type === 'bolts') {
     app.hud.setBolts(app.profile.bolts);
+  } else if (n.type === 'pickup') {
+    app.hud.toast(`+${n.bolts} Bolts pickup`, 1.2);
   } else if (n.type === 'comboEnd') {
     app.hud.setScore(sc.score, 0, 1);
     app.hud.toast(`Combo x${n.count} banked: ${n.points.toLocaleString('en-US')}`);
@@ -317,7 +331,12 @@ function render(_alpha, frameSeconds) {
     shake: cam.shake,
     reducedMotion: app.profile.settings.a11y.reducedMotion,
   });
+  if (app.debugCam) {
+    app.camera.position.set(app.debugCam.eye.x, app.debugCam.eye.y, app.debugCam.eye.z);
+    app.camera.lookAt(app.debugCam.look.x, app.debugCam.look.y, app.debugCam.look.z);
+  }
   app.sceneInfo.follow(b.pos);
+  app.pickupMeshes.update(fdt, app.profile.settings.a11y.reducedMotion);
   app.hud.setSpeed(speed);
   app.hud.setLiveTrick(s.currentTrickText());
   app.hud.setBalance(s.grind ? s.grind.balance : null);
@@ -352,6 +371,8 @@ window.__game = {
       trickText: app.hud?.trickText || '',
       camera: app.cameraRig?.state,
       stats: s ? { ...s.stats2 } : null,
+      pickups: s ? s.pickups.map((p) => ({ id: p.id, taken: p.taken, x: p.x, y: p.y, z: p.z })) : [],
+      mapId: s ? s.map.id : null,
       errors: app.errors.slice(),
     };
   },
@@ -378,6 +399,10 @@ window.__game = {
   flushSave() {
     app.dirty = true;
     flushSave();
+  },
+  /** Debug: pin the camera (screenshots). Pass null to release. */
+  debugCamera(cam) {
+    app.debugCam = cam;
   },
 };
 

@@ -13,6 +13,8 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 6 | Fixed | Unit test (M2) |
 | 7 | Fixed | Browser check (M2) |
 | 8 | Fixed | Unit test (M3) |
+| 9 | Fixed | Design review of downtown map (M4) |
+| 10 | Fixed | Unit test (M4) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -61,3 +63,15 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** floating-point accumulation: the remainder summed to 0.99999…, and `Math.floor` dropped it.
 - **Fix:** floor with a small epsilon (`Math.floor(total + 1e-9)`) and clamp the remainder at 0 (`src/game/economy.js`).
 - **Proof:** `tests/economy.test.js` › "grinding earns per second, capped per run" and `tests/progression.test.js` › "grind time Bolts are paid when the grind scores" — both pass.
+
+## 9. Riders could never catch air off a smooth hill crest
+- **Symptom:** at any speed, rolling over a convex hill top kept the rider glued to the ground.
+- **Cause:** the grounded step re-snapped the rider to the surface every tick; the only launch conditions were a big height gap (ledge/lip) or a sharp kink.
+- **Fix:** `crestLaunch()` in `src/physics/body.js` launches when v²·κ (curvature estimated from the normal change per tick) exceeds g·nᵧ.
+- **Proof:** `tests/maps.test.js` › "crest launch: fast over a convex hill top leaves the ground, slow stays down" and "downtown: bombing the hill builds speed and the bump launches you" (≥ 3 airs, no bail) — pass.
+
+## 10. Skatepark and downtown were missing required object types
+- **Symptom:** the skatepark had no barriers and downtown had no stairs, although every map must contain ramps, rails, benches, stairs, barriers and pickups.
+- **Cause:** map authoring oversight.
+- **Fix:** added jersey barriers and a planter to the skatepark; a loading dock with a 6-step stair set and handrails to downtown.
+- **Proof:** `tests/maps.test.js` › 'map "…" has bounds, ground, spawns and ramps, rails, benches, stairs, barriers and pickups' for all four maps; `npm run check:maps` still passes (both new handrails grinded in simulation).

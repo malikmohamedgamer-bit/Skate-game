@@ -1,0 +1,73 @@
+{
+  "id": "downtown",
+  "name": "Downtown Hills",
+  "order": 4,
+  "description": "A steep downtown: bomb the hill from uptown, catch air off the terrace, and hit the kickers and quarter pipe in the plaza below.",
+  "theme": { "sky": "#c9a6e8", "fog": "#e3d1f2", "ground": "#5f646d", "accent": "#cc79a7" },
+  "bounds": { "minX": -45, "maxX": 45, "minZ": -78, "maxZ": 78 },
+  "terrain": {
+    "type": "hills",
+    "features": [
+      { "type": "plateau", "x": 0, "z": 58, "w": 120, "d": 36, "height": 7, "edge": 32 },
+      { "type": "plateau", "x": 0, "z": -12, "w": 120, "d": 8, "height": 1.8, "edge": 10 },
+      { "type": "hill", "x": 0, "z": -48, "radius": 7, "height": 1.0 }
+    ]
+  },
+  "unlock": { "stars": 12 },
+  "spawns": [
+    { "id": "main", "x": 0, "z": 70, "rot": 180 },
+    { "id": "bottom", "x": 0, "z": -66, "rot": 0 },
+    { "id": "terrace", "x": 0, "z": -12, "rot": 180 }
+  ],
+  "objects": [
+    { "id": "tower-ne", "type": "building", "x": 33, "z": 50, "w": 16, "d": 12, "h": 14, "color": "#7f8ca6" },
+    { "id": "tower-nw", "type": "building", "x": -33, "z": 50, "w": 16, "d": 12, "h": 18, "color": "#a6927f" },
+    { "id": "tower-ne2", "type": "building", "x": 33, "z": 68, "w": 16, "d": 12, "h": 10, "color": "#8fa68b" },
+    { "id": "tower-nw2", "type": "building", "x": -33, "z": 68, "w": 16, "d": 12, "h": 12, "color": "#9a8fb0" },
+    { "id": "uptown-ledge", "type": "ledge", "x": 12, "z": 60, "w": 0.6, "d": 10, "h": 0.5, "grind": true },
+    { "id": "uptown-rail", "type": "rail", "x1": -12, "z1": 52, "x2": -12, "z2": 68, "h": 0.45 },
+    { "id": "drop-kicker", "type": "kicker", "x": 0, "z": 42.5, "rot": 180, "w": 3, "d": 2.2, "h": 0.7 },
+    { "id": "uptown-bench", "type": "bench", "x": 20, "z": 70, "rot": 90, "w": 0.6, "d": 3, "h": 0.45, "grind": true },
+    { "id": "lamp-h1", "type": "lamp", "x": -10, "z": 32, "w": 0.25, "d": 0.25, "h": 4.5 },
+    { "id": "lamp-h2", "type": "lamp", "x": 10, "z": 24, "w": 0.25, "d": 0.25, "h": 4.5 },
+    { "id": "lamp-h3", "type": "lamp", "x": -10, "z": 16, "w": 0.25, "d": 0.25, "h": 4.5 },
+    { "id": "lamp-h4", "type": "lamp", "x": 10, "z": 8, "w": 0.25, "d": 0.25, "h": 4.5 },
+    { "id": "terrace-rail", "type": "rail", "x1": 12, "z1": -9.5, "x2": 12, "z2": -14.5, "h": 0.45 },
+    { "id": "terrace-bench", "type": "bench", "x": -12, "z": -12, "w": 0.6, "d": 3, "h": 0.45, "grind": true },
+    { "id": "tower-se", "type": "building", "x": 33, "z": -42, "w": 16, "d": 14, "h": 16, "color": "#6f7f99" },
+    { "id": "tower-sw", "type": "building", "x": -33, "z": -42, "w": 16, "d": 14, "h": 20, "color": "#99856f" },
+    { "id": "tower-se2", "type": "building", "x": 33, "z": -64, "w": 16, "d": 14, "h": 12, "color": "#7f998a" },
+    { "id": "tower-sw2", "type": "building", "x": -33, "z": -64, "w": 16, "d": 14, "h": 14, "color": "#8a7f99" },
+    { "id": "plaza-kicker-e", "type": "kicker", "x": 9, "z": -36, "w": 2.6, "d": 2.4, "h": 0.9 },
+    { "id": "plaza-kicker-w", "type": "kicker", "x": -9, "z": -36, "w": 2.6, "d": 2.4, "h": 0.9 },
+    { "id": "south-qp", "type": "quarter", "x": 0, "z": -75.9, "rot": 180, "w": 24, "r": 3, "angle": 80, "deck": 1.2 },
+    { "id": "plaza-rail-w", "type": "rail", "x1": -15, "z1": -55, "x2": -15, "z2": -70, "h": 0.5 },
+    { "id": "plaza-rail-e", "type": "rail", "x1": 15, "z1": -70, "x2": 15, "z2": -55, "h": 0.55 },
+    { "id": "plaza-bench", "type": "bench", "x": 20, "z": -52, "w": 0.6, "d": 3, "h": 0.45, "grind": true },
+    { "id": "barrier-1", "type": "barrier", "x": -20, "z": -30, "rot": 90, "w": 5, "d": 0.5, "h": 1.0 },
+    { "id": "barrier-2", "type": "barrier", "x": 20, "z": -30, "rot": 90, "w": 5, "d": 0.5, "h": 1.0 },
+    { "id": "parked-car", "type": "car", "x": 22, "z": -60, "w": 1.9, "d": 4.4, "h": 1.5, "color": "#d6a43c" },
+    { "id": "loading-dock", "type": "platform", "x": 24, "z": -74.5, "w": 10, "d": 5, "h": 1.02 },
+    { "id": "dock-stairs", "type": "stairs", "x": 17.92, "z": -74.5, "rot": -90, "w": 4, "steps": 6, "rise": 0.17, "run": 0.36, "top": 0, "rails": "both" }
+  ],
+  "pickups": [
+    { "id": "d-p1", "x": 0, "z": 60, "y": 1.0 },
+    { "id": "d-p2", "x": -12, "z": 60, "y": 1.9 },
+    { "id": "d-p3", "x": 12, "z": 60, "y": 1.6 },
+    { "id": "d-p4", "x": 0, "z": 30, "y": 1.0 },
+    { "id": "d-p5", "x": 0, "z": 15, "y": 1.0 },
+    { "id": "d-p6", "x": 0, "z": -12, "y": 1.0 },
+    { "id": "d-p7", "x": 12, "z": -12, "y": 1.9 },
+    { "id": "d-p8", "x": 0, "z": -48, "y": 1.0 },
+    { "id": "d-p9", "x": 9, "z": -32.5, "y": 2.6, "via": "plaza-kicker-e" },
+    { "id": "d-p10", "x": -15, "z": -62, "y": 1.9 },
+    { "id": "d-p11", "x": 0, "z": -70, "y": 1.0 },
+    { "id": "d-p12", "x": 20, "z": -52, "y": 1.6 },
+    { "id": "d-p13", "x": 25, "z": -74.5, "y": 1.0 }
+  ],
+  "checkpoints": [
+    { "id": "d-cp-terrace", "x": 0, "z": -12, "radius": 5 },
+    { "id": "d-cp-bottom", "x": 0, "z": -60, "radius": 5 },
+    { "id": "d-cp-uptown", "x": 0, "z": 55, "radius": 5 }
+  ]
+}
