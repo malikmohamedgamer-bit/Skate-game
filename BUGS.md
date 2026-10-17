@@ -22,6 +22,10 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 | 15 | Fixed | Code review (M6) |
 | 16 | Fixed | Screenshot check (M6) |
 | 17 | Fixed | Screenshot check (M7) |
+| 18 | Fixed | E2E test (M8) |
+| 19 | Fixed | Screenshot check (M8) |
+| 20 | Fixed | Screenshot check (M8) |
+| 21 | Fixed | Screenshot check (M8) |
 
 ## 1. Zigzag deck pattern drew a straight line
 - **Symptom:** the "zigzag" part pattern rendered as a flat stripe.
@@ -124,3 +128,27 @@ that proves the fix. A bug is only marked **Fixed** once that proof has run.
 - **Cause:** the riding pose was only applied by the per-frame in-game animation (`update()`); the preview renders the bare mesh.
 - **Fix:** `buildVehicleMesh` applies the riding pose when the model is built; the scooter arms/torso were re-tuned to reach the bars.
 - **Proof:** shop preview screenshots (skateboard sideways stance; scooter rider holding the bars).
+
+## 18. Touch Brake button collided with the menu Back button selector
+- **Symptom:** a keyboard test found two elements matching `[data-action="back"]` (the menu Back button and the touch Brake button, whose action is `back`).
+- **Cause:** both used the same data attribute name. Not user-visible (the screen manager only searches inside its dialog), but fragile.
+- **Fix:** touch buttons use `data-touch-action`.
+- **Proof:** `e2e/a11y.spec.js` › "keyboard only: …" passes.
+
+## 19. Bail text read "✖ Bail Bail"
+- **Symptom:** the HUD showed the word Bail twice.
+- **Cause:** the icon label already contains "Bail" and the title repeated it.
+- **Fix:** bails pass an empty title; the reason is shown below.
+- **Proof:** `e2e/a11y.spec.js` › "a bail shows "✖ Bail" with its reason (once) …" — passes.
+
+## 20. A bail was captioned "[clean landing]" as well as "[crash]"
+- **Symptom:** captions showed both on a bail.
+- **Cause:** the landing sound was tied to the raw `land` physics event, which happens before the landing is judged.
+- **Fix:** the landing sound plays on `landClean` / landed tricks only.
+- **Proof:** same e2e test asserts the captions contain "[crash]" and not "[clean landing]".
+
+## 21. Quest tracker overlapped touch buttons on short phone screens
+- **Symptom:** at 844×390 with the one-handed right layout, the OLLIE button covered the quest tracker.
+- **Cause:** the tracker sits in the right column, where one-handed buttons also go.
+- **Fix:** on screens shorter than 520 px the HUD is compacted and the tracker moves under the score, showing one quest.
+- **Proof:** screenshot `m8-touch-onehand2` shows no overlap; `e2e/touch.spec.js` passes.

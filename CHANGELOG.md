@@ -126,3 +126,21 @@ Verified
 - `npx playwright test` → 29 passed. New: buying the Street Deck drops Bolts 150 → 70; Pro Model is refused with "Not enough Bolts"; Equip rebuilds the preview (deck color and pixel fingerprint change); color + pattern change the preview; the in-game rider and stats use the deck; everything survives a reload; buying/equipping the scooter switches vehicles; the shop works by keyboard.
 - Screenshots: shop with try-on deltas, skateboard (helmet, pads, hoodie) and scooter previews, pattern sheet (BUGS.md #1 verified).
 - `npx eslint .` → clean.
+
+## Milestone 8 — Accessibility and touch
+
+Added
+- `src/ui/a11y.js`: settings → body classes / CSS variables (reduced motion, high contrast, colorblind-safe, text scale, touch scale); OS `prefers-reduced-motion` is the default for new players; throttled screen reader announcer (merges rapid tricks, assertive results first).
+- `src/core/audio.js`: synthesized sound effects (WebAudio, no files), rolling and grind loops, mute and volume, captions for every cue that carries information.
+- Settings screen (`src/ui/menu.js`, from the main menu and the pause menu): reduced motion, high contrast, colorblind palette, text size 80–200%, captions, announcements, quest tracker, game speed (100/75/50%), forgiving landings, auto-push, camera view/smoothing (0 = off)/shake, mute/volume, touch controls (auto/on/off), touch layout (two thumbs / one-handed left / right), button size (normal/large/extra large), swipe steering, shadows. All native labelled controls.
+- Key remapping for every action: press-a-key capture, conflict detection with Swap / Cancel, reserved keys (Tab/Enter) and locked Escape explained, reset, one-handed keyboard presets (left/right).
+- `src/ui/touch.js`: on-screen steer/push/brake/ollie/trick buttons (≥ 44 px, enlargeable), swipe up = ollie, swipes in the air = flips/spins, optional swipe steering, multi-touch, no scroll/zoom/back gesture; rotate prompt in portrait (pauses play).
+- High contrast / colorblind palettes rebuild the 3D scene on resume; gamepad menu navigation; compact HUD on short screens.
+- Announcements: tricks, bails, Bolts (aggregated), quests, checkpoints, timer warning, level results (assertive).
+
+Verified
+- `npm test` → 205 tests, 205 pass (12 new: presentation, reduced-motion default, announcement throttling, touch sizes ≥ 44 px in every layout/scale, one-handed layouts, swipe classification and mapping, captions, settings normalization, slow game speed).
+- `npx playwright test` → 44 passed. New `e2e/a11y.spec.js` (8): keyboard-only menus with ≥ 3 px focus outlines, Enter/Space/Escape, focus trap; remap Ollie to L then W with conflict + swap and use the new keys in game; reserved Tab refused; one-handed preset; reduced motion keeps FOV at 62; text 150% = 24 px; slow speed = 30 ticks per second; forgiving landings; high-contrast scene; announcements and captions; every settings control has a name; bail text/caption regression. New `e2e/touch.spec.js` (7, emulated phone): controls only in play, every button ≥ 44×44; real touchscreen tap ollies; hold push/steer/brake; swipe up ollies and flips in the air; enlarge + one-handed layout; portrait rotate prompt pauses; page never scrolls.
+- Screenshots: settings, phone touch layouts (two thumbs and one-handed), high contrast, colorblind palette with captions.
+- Bugs: BUGS.md #18–#21.
+- `npx eslint .` → clean.

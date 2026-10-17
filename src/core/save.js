@@ -59,6 +59,9 @@ export function defaultSettings({ prefersReducedMotion = false } = {}) {
       touchLayout: 'standard', // 'standard' | 'left' | 'right' (one-handed clusters)
       touchScale: 1, // 1 | 1.25 | 1.5
       swipeSteer: false,
+      touchControls: 'auto', // 'auto' | 'on' | 'off'
+      announceTricks: true,
+      questTracker: true,
     },
     graphics: { shadows: true },
   };
@@ -230,6 +233,7 @@ function mergeSettings(def, s) {
   a.gameSpeed = [1, 0.75, 0.5].includes(a.gameSpeed) ? a.gameSpeed : 1;
   if (!['off', 'left', 'right'].includes(a.oneHanded)) a.oneHanded = 'off';
   if (!['standard', 'left', 'right'].includes(a.touchLayout)) a.touchLayout = 'standard';
+  if (!['auto', 'on', 'off'].includes(a.touchControls)) a.touchControls = 'auto';
   out.audio.volume = Math.min(1, Math.max(0, out.audio.volume));
   out.camera.smoothing = Math.min(1, Math.max(0, out.camera.smoothing));
   if (!['follow', 'close', 'top'].includes(out.camera.mode)) out.camera.mode = 'follow';

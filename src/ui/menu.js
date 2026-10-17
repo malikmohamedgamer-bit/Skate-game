@@ -268,3 +268,210 @@ export function showHelp(sm, { bindings }, actions) {
       </div>`,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Settings (accessibility, gameplay, camera, audio, touch, controls, graphics)
+// ---------------------------------------------------------------------------
+function check(id, label, value, hint = '') {
+  return `<div class="setting"><label for="${id}">${label}${hint ? `<span class="hint">${hint}</span>` : ''}</label>
+    <input type="checkbox" id="${id}" ${value ? 'checked' : ''} /></div>`;
+}
+function select(id, label, value, options, hint = '') {
+  return `<div class="setting"><label for="${id}">${label}${hint ? `<span class="hint">${hint}</span>` : ''}</label>
+    <select id="${id}">${options.map(([v, t]) => `<option value="${v}" ${String(v) === String(value) ? 'selected' : ''}>${t}</option>`).join('')}</select></div>`;
+}
+function range(id, label, value, min, max, step, text) {
+  return `<div class="setting"><label for="${id}">${label} <output id="${id}-out" for="${id}">${text}</output></label>
+    <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}" aria-valuetext="${text}" /></div>`;
+}
+
+function keysTable(bindings) {
+  return Object.keys(ACTION_LABELS)
+    .map((a) => {
+      const k = bindings[a] || [];
+      const cell = (slot) =>
+        `<td><button class="btn keybtn" data-rebind="${a}" data-slot="${slot}" aria-label="${esc(ACTION_LABELS[a])}, ${slot === 0 ? 'primary' : 'secondary'} key: ${esc(keyLabel(k[slot]))}. Activate to change.">${esc(keyLabel(k[slot]))}</button></td>`;
+      return `<tr><th scope="row">${esc(ACTION_LABELS[a])}</th>${cell(0)}${cell(1)}</tr>`;
+    })
+    .join('');
+}
+
+/**
+ * actions: { back, change(path, value), rebind(action, slot, code, swap) -> result,
+ *            preset(name), resetKeys(), captureKey(fn), cancelCapture(), getBindings() }
+ */
+export function showSettings(sm, { settings, bindings, inGame = false }, actions) {
+  const a = settings.a11y;
+  const c = settings.camera;
+  const html = `
+    <p class="muted">Changes apply right away and are saved.</p>
+    <div class="settings-grid">
+      <fieldset><legend>Accessibility &amp; display</legend>
+        ${check('set-reduced', 'Reduced motion', a.reducedMotion, 'No camera shake, flashing or rapid zoom')}
+        ${check('set-contrast', 'High contrast', a.highContrast, 'Stronger colors and outlines in menus and the world')}
+        ${check('set-cb', 'Colorblind-safe palette', a.colorblind, 'Okabe-Ito colors for good/bad, rails, ramps and pickups')}
+        ${range('set-text', 'Text size', Math.round(a.textScale * 100), 80, 200, 10, `${Math.round(a.textScale * 100)}%`)}
+        ${check('set-captions', 'Sound captions', a.captions, 'On-screen text for every important sound')}
+        ${check('set-announce', 'Screen reader: announce tricks and Bolts', a.announceTricks, 'Quests, levels and bails are always announced')}
+        ${check('set-tracker', 'Quest tracker on the HUD', a.questTracker)}
+      </fieldset>
+      <fieldset><legend>Gameplay</legend>
+        ${select('set-speed', 'Game speed', a.gameSpeed, [
+          [1, 'Normal (100%)'],
+          [0.75, 'Slow (75%)'],
+          [0.5, 'Slower (50%)'],
+        ], 'Slower speed gives more time for trick timing')}
+        ${check('set-forgiving', 'Forgiving landings', a.forgivingLandings, 'Wider landing tolerance and calmer grind balance')}
+        ${check('set-autopush', 'Auto-push', a.autoPush, 'Keeps pushing for you up to cruising speed')}
+      </fieldset>
+      <fieldset><legend>Camera</legend>
+        ${select('set-cam', 'Camera view', c.mode, [
+          ['follow', 'Third-person follow'],
+          ['close', 'Close (first-person-ish)'],
+          ['top', 'Top-down'],
+        ])}
+        ${range('set-smooth', 'Camera smoothing', Math.round(c.smoothing * 100), 0, 100, 10, c.smoothing <= 0.001 ? 'Off' : `${Math.round(c.smoothing * 100)}%`)}
+        ${check('set-shake', 'Camera shake', c.shake && !a.reducedMotion, a.reducedMotion ? 'Off while reduced motion is on' : '')}
+      </fieldset>
+      <fieldset><legend>Audio</legend>
+        ${check('set-mute', 'Mute all sound', settings.audio.muted)}
+        ${range('set-volume', 'Volume', Math.round(settings.audio.volume * 100), 0, 100, 5, `${Math.round(settings.audio.volume * 100)}%`)}
+      </fieldset>
+      <fieldset><legend>Touch controls</legend>
+        ${select('set-touch', 'Show touch controls', a.touchControls, [
+          ['auto', 'Automatic (touch screens)'],
+          ['on', 'Always'],
+          ['off', 'Never'],
+        ])}
+        ${select('set-touch-layout', 'Button layout', a.touchLayout, [
+          ['standard', 'Two thumbs'],
+          ['left', 'One hand: left side'],
+          ['right', 'One hand: right side'],
+        ])}
+        ${select('set-touch-size', 'Button size', a.touchScale, [
+          [1, 'Normal'],
+          [1.25, 'Large'],
+          [1.5, 'Extra large'],
+        ])}
+        ${check('set-swipe-steer', 'Swipe to steer', a.swipeSteer, 'Drag on the steering side to steer smoothly')}
+      </fieldset>
+      <fieldset><legend>Graphics</legend>
+        ${check('set-shadows', 'Shadows', settings.graphics.shadows, 'Turn off for better performance')}
+      </fieldset>
+    </div>
+    <fieldset class="keys-fieldset"><legend>Keyboard controls</legend>
+      ${select('set-onehand', 'One-handed keyboard', a.oneHanded, [
+        ['off', 'Off (default keys)'],
+        ['left', 'Left hand only (WASD side)'],
+        ['right', 'Right hand only (arrow keys side)'],
+      ], 'Puts every action within reach of one hand')}
+      <div id="key-notice" role="status" aria-live="polite"></div>
+      <table class="keys-table"><thead><tr><th scope="col">Action</th><th scope="col">Primary</th><th scope="col">Secondary</th></tr></thead>
+        <tbody id="keys-body">${keysTable(bindings)}</tbody></table>
+      <p class="row"><button class="btn" id="keys-reset">Reset keys to defaults</button></p>
+      <p class="muted small">Esc always pauses and goes back. Tab and Enter are kept for menu navigation.</p>
+    </fieldset>
+    ${inGame ? '<p class="muted small">Some visual changes apply when you resume.</p>' : ''}`;
+  const el = sm.show({ id: 'settings', title: 'Settings &amp; accessibility', onBack: actions.back, html, label: inGame ? 'pause menu' : 'main menu' });
+
+  const bindCheck = (id, path) => el.querySelector('#' + id).addEventListener('change', (e) => actions.change(path, e.target.checked));
+  const bindSelect = (id, path, num = false) => el.querySelector('#' + id).addEventListener('change', (e) => actions.change(path, num ? Number(e.target.value) : e.target.value));
+  const bindRange = (id, path, scale, fmt) => {
+    const inp = el.querySelector('#' + id);
+    const out = el.querySelector(`#${id}-out`);
+    inp.addEventListener('input', () => {
+      const t = fmt(Number(inp.value));
+      out.textContent = t;
+      inp.setAttribute('aria-valuetext', t);
+      actions.change(path, Number(inp.value) / scale);
+    });
+  };
+  bindCheck('set-reduced', 'a11y.reducedMotion');
+  bindCheck('set-contrast', 'a11y.highContrast');
+  bindCheck('set-cb', 'a11y.colorblind');
+  bindRange('set-text', 'a11y.textScale', 100, (v) => `${v}%`);
+  bindCheck('set-captions', 'a11y.captions');
+  bindCheck('set-announce', 'a11y.announceTricks');
+  bindCheck('set-tracker', 'a11y.questTracker');
+  bindSelect('set-speed', 'a11y.gameSpeed', true);
+  bindCheck('set-forgiving', 'a11y.forgivingLandings');
+  bindCheck('set-autopush', 'a11y.autoPush');
+  bindSelect('set-cam', 'camera.mode');
+  bindRange('set-smooth', 'camera.smoothing', 100, (v) => (v === 0 ? 'Off' : `${v}%`));
+  bindCheck('set-shake', 'camera.shake');
+  bindCheck('set-mute', 'audio.muted');
+  bindRange('set-volume', 'audio.volume', 100, (v) => `${v}%`);
+  bindSelect('set-touch', 'a11y.touchControls');
+  bindSelect('set-touch-layout', 'a11y.touchLayout');
+  bindSelect('set-touch-size', 'a11y.touchScale', true);
+  bindCheck('set-swipe-steer', 'a11y.swipeSteer');
+  bindCheck('set-shadows', 'graphics.shadows');
+
+  const notice = el.querySelector('#key-notice');
+  const refreshKeys = (focusSel) => {
+    el.querySelector('#keys-body').innerHTML = keysTable(actions.getBindings());
+    wireKeys();
+    const f = focusSel && el.querySelector(focusSel);
+    if (f) f.focus();
+  };
+  el.querySelector('#set-onehand').addEventListener('change', (e) => {
+    actions.preset(e.target.value);
+    notice.textContent = e.target.value === 'off' ? 'Default keys restored.' : `One-handed ${e.target.value} keys applied.`;
+    refreshKeys();
+  });
+  el.querySelector('#keys-reset').addEventListener('click', () => {
+    actions.resetKeys();
+    el.querySelector('#set-onehand').value = 'off';
+    notice.textContent = 'Keys reset to defaults.';
+    refreshKeys('#keys-reset');
+  });
+
+  function wireKeys() {
+    for (const b of el.querySelectorAll('[data-rebind]')) {
+      b.addEventListener('click', () => {
+        const action = b.dataset.rebind;
+        const slot = Number(b.dataset.slot);
+        b.classList.add('capturing');
+        b.textContent = 'Press a key…';
+        notice.textContent = `Press the new key for ${ACTION_LABELS[action]}, or Escape to cancel.`;
+        actions.captureKey((code) => {
+          b.classList.remove('capturing');
+          if (code === 'Escape') {
+            notice.textContent = 'Cancelled.';
+            refreshKeys(`[data-rebind="${action}"][data-slot="${slot}"]`);
+            return;
+          }
+          const r = actions.rebind(action, slot, code, false);
+          if (r.ok) {
+            notice.textContent = `${ACTION_LABELS[action]}: ${keyLabel(code)}.`;
+            refreshKeys(`[data-rebind="${action}"][data-slot="${slot}"]`);
+          } else if (r.reason === 'conflict') {
+            notice.innerHTML = `<div class="notice" role="alert"><strong>${esc(keyLabel(code))}</strong> is already used for <strong>${esc(ACTION_LABELS[r.conflict.action])}</strong>.
+              <div class="row"><button class="btn primary" id="key-swap">Swap keys</button><button class="btn" id="key-cancel">Cancel</button></div></div>`;
+            refreshKeys();
+            el.querySelector('#key-swap').addEventListener('click', () => {
+              actions.rebind(action, slot, code, true);
+              notice.textContent = `Swapped: ${ACTION_LABELS[action]} is now ${keyLabel(code)}.`;
+              refreshKeys(`[data-rebind="${action}"][data-slot="${slot}"]`);
+            });
+            el.querySelector('#key-cancel').addEventListener('click', () => {
+              notice.textContent = 'Cancelled.';
+              refreshKeys(`[data-rebind="${action}"][data-slot="${slot}"]`);
+            });
+            el.querySelector('#key-swap').focus();
+          } else {
+            notice.textContent =
+              r.reason === 'reserved'
+                ? `${keyLabel(code)} cannot be used: it is needed for menu navigation.`
+                : r.reason === 'locked'
+                  ? 'Escape always pauses and cannot be moved.'
+                  : 'That key cannot be used.';
+            refreshKeys(`[data-rebind="${action}"][data-slot="${slot}"]`);
+          }
+        });
+      });
+    }
+  }
+  wireKeys();
+  return el;
+}

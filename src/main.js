@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 import { fetchJsonReader, loadGameData } from './core/data.js';
 import { createLoop } from './core/loop.js';
-import { createInput } from './core/input.js';
+import { DEFAULT_BINDINGS, ONE_HANDED_PRESETS, createInput, rebind } from './core/input.js';
+import { createAudio } from './core/audio.js';
 import { createCameraRig } from './core/camera.js';
 import { createSaveStore } from './core/save.js';
 import { createSession } from './game/session.js';
@@ -23,7 +24,9 @@ import { buildMapScene } from './world/scene.js';
 import { buildCheckpointMeshes, buildObjectMeshes, buildPickupMeshes, choosePalette } from './world/objects-mesh.js';
 import { createRiderModel, patternCanvas } from './rider/rider.js';
 import { createHud } from './ui/hud.js';
-import { createScreenManager, esc, showFreeRoam, showHelp, showLevelSelect, showMainMenu, showPause, showResults } from './ui/menu.js';
+import { createScreenManager, esc, showFreeRoam, showHelp, showLevelSelect, showMainMenu, showPause, showResults, showSettings } from './ui/menu.js';
+import { applyPresentation, createAnnouncer, systemPrefersReducedMotion } from './ui/a11y.js';
+import { createTouchControls, isTouchDevice } from './ui/touch.js';
 import { showQuestLog, trackerItems } from './ui/quests-ui.js';
 import { shopPreview, showShop } from './ui/shop.js';
 import { buildLook, buyItem, computeStats, equipItem, itemById, setPartColor } from './game/customize.js';
@@ -82,14 +85,44 @@ async function boot() {
   const loaded = app.store.load();
   app.profile = loaded.save;
   app.saveStatus = loaded.status;
+  if (loaded.status === 'new' && systemPrefersReducedMotion()) app.profile.settings.a11y.reducedMotion = true;
   refreshQuestsForToday();
   app.profile.quests = syncQuestsWithProfile(app.profile.quests, app.data.quests, app.profile).state;
+  app.announcer = createAnnouncer({ polite: $('#sr-polite'), assertive: $('#sr-assertive') });
+  app.audio = createAudio({ onCaption: showCaption });
+  const unlockAudio = () => app.audio.unlock();
+  window.addEventListener('keydown', unlockAudio, { capture: true });
+  window.addEventListener('pointerdown', unlockAudio, { capture: true });
 
   app.input = createInput({ target: window, bindings: app.profile.bindings || undefined });
   app.input.attachMouse(canvas);
   app.input.onAction((a) => {
     if (a === 'pause') onPauseKey();
+    else if (app.screen !== 'play') gamepadMenu(a);
   });
+  app.touch = createTouchControls($('#touch-controls'), {
+    input: app.input,
+    getAirborne: () => !!(app.session && app.session.body.state === 'air'),
+    layout: app.profile.settings.a11y.touchLayout,
+    scale: app.profile.settings.a11y.touchScale,
+    swipeSteer: app.profile.settings.a11y.swipeSteer,
+  });
+  window.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch' && !app.touchSeen) {
+      app.touchSeen = true;
+      updateTouchVisibility();
+      checkOrientation();
+    }
+  });
+  // No page scroll / pinch zoom / overscroll-back while playing.
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (app.screen === 'play' && e.cancelable) e.preventDefault();
+    },
+    { passive: false },
+  );
+  window.addEventListener('orientationchange', checkOrientation);
 
   app.screens = createScreenManager($('#screens'));
   app.hud = createHud($('#hud'));
@@ -97,7 +130,11 @@ async function boot() {
   app.hud.setBolts(app.profile.bolts);
 
   app.loop = createLoop({ step: tick, render });
-  window.addEventListener('resize', resize);
+  applySettings();
+  window.addEventListener('resize', () => {
+    resize();
+    checkOrientation();
+  });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       if (app.screen === 'play') pause();
@@ -106,6 +143,7 @@ async function boot() {
   });
   window.addEventListener('pagehide', flushSave);
   resize();
+  checkOrientation();
   $('#boot').hidden = true;
   go('menu');
   app.loop.start();
@@ -127,12 +165,121 @@ function resize() {
   app.camera.updateProjectionMatrix();
 }
 
-/** Screen reader announcement (polite live region). */
-function announce(text) {
-  const el = $('#sr-polite');
-  el.textContent = '';
-  // A separate task so repeated identical messages are re-announced.
-  setTimeout(() => (el.textContent = text), 30);
+/** Screen reader announcement via the throttled ARIA live regions. */
+function announce(text, opts = {}) {
+  if (app.announcer) app.announcer.say(text, opts);
+}
+
+/** On-screen caption for a sound cue (visual only; announcements are separate). */
+function showCaption(text) {
+  const box = $('#captions');
+  const span = document.createElement('span');
+  span.textContent = text;
+  box.appendChild(span);
+  while (box.children.length > 3) box.firstChild.remove();
+  setTimeout(() => span.remove(), 1800);
+}
+
+function cue(name) {
+  if (app.audio) app.audio.play(name);
+}
+
+// ---------------------------------------------------------------------------
+// Settings
+// ---------------------------------------------------------------------------
+function applySettings() {
+  const st = app.profile.settings;
+  const a = st.a11y;
+  applyPresentation(st);
+  app.audio.setVolume(st.audio.volume);
+  app.audio.setMuted(st.audio.muted);
+  app.audio.setCaptions(a.captions);
+  app.announcer.setCategory('trick', a.announceTricks);
+  app.announcer.setCategory('bolts', a.announceTricks);
+  app.loop.setTimeScale(a.gameSpeed);
+  app.cameraRig.mode = st.camera.mode;
+  app.renderer.shadowMap.enabled = st.graphics.shadows;
+  if (app.session) {
+    app.session.settings.forgivingLandings = a.forgivingLandings;
+    app.session.settings.autoPush = a.autoPush;
+  }
+  app.hud.setReducedMotion(a.reducedMotion);
+  app.touch.rebuild({ layout: a.touchLayout, scale: a.touchScale, swipeSteer: a.swipeSteer });
+  updateTouchVisibility();
+  checkOrientation();
+}
+
+const VISUAL_KEYS = new Set(['a11y.highContrast', 'a11y.colorblind', 'graphics.shadows']);
+function changeSetting(path, value) {
+  const [group, key] = path.split('.');
+  app.profile.settings[group][key] = value;
+  if (VISUAL_KEYS.has(path)) app.needsSceneRebuild = true;
+  applySettings();
+  markDirty();
+  flushSave();
+}
+
+function touchWanted() {
+  const mode = app.profile.settings.a11y.touchControls;
+  return mode === 'on' || (mode === 'auto' && (isTouchDevice() || app.touchSeen));
+}
+function updateTouchVisibility() {
+  app.touch.setVisible(app.screen === 'play' && touchWanted());
+}
+
+/** Landscape is the default on touch devices: show a rotate prompt in portrait. */
+function checkOrientation() {
+  const portrait = window.innerHeight > window.innerWidth;
+  const show = portrait && touchWanted();
+  $('#rotate-prompt').hidden = !show;
+  if (show && app.screen === 'play') pause();
+}
+
+function settingsActions(back) {
+  return {
+    back,
+    change: changeSetting,
+    getBindings: () => app.input.bindings,
+    captureKey: (fn) => app.input.captureNextKey(fn),
+    rebind(action, slot, code, swap) {
+      const r = rebind(app.input.bindings, action, slot, code, { swap });
+      if (r.ok) {
+        app.input.setBindings(r.bindings);
+        app.profile.bindings = app.input.bindings;
+        markDirty();
+        flushSave();
+      }
+      return r;
+    },
+    preset(name) {
+      app.input.setBindings(name === 'off' ? DEFAULT_BINDINGS : ONE_HANDED_PRESETS[name]);
+      app.profile.bindings = app.input.bindings;
+      app.profile.settings.a11y.oneHanded = name;
+      applySettings();
+      markDirty();
+      flushSave();
+    },
+    resetKeys() {
+      app.input.setBindings(DEFAULT_BINDINGS);
+      app.profile.bindings = null;
+      app.profile.settings.a11y.oneHanded = 'off';
+      applySettings();
+      markDirty();
+      flushSave();
+    },
+  };
+}
+
+/** Gamepad in menus: d-pad / stick moves focus, A activates, B goes back. */
+function gamepadMenu(action) {
+  const root = app.screens.current;
+  if (!root) return;
+  const items = [...root.querySelectorAll('button:not([disabled]), input, select, [tabindex="0"]')].filter((el) => el.offsetParent !== null);
+  const i = items.indexOf(document.activeElement);
+  if (action === 'forward' || action === 'left') (items[i - 1] || items[items.length - 1])?.focus();
+  else if (action === 'back' || action === 'right') (items[i + 1] || items[0])?.focus();
+  else if (action === 'ollie') document.activeElement?.click();
+  else if (action === 'brake') app.screens.back();
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +344,7 @@ function shopActions(back) {
       flushSave();
       sendQuestEvent({ type: 'itemBought', itemId: id, category: item.category, price: item.price });
       announce(`Bought ${item.name} for ${item.price} Bolts. You have ${app.profile.bolts} Bolts left.`);
+      cue('buy');
       return shopCtx();
     },
     equip(id) {
@@ -231,6 +379,8 @@ function setScreen(name) {
   app.input.setEnabled(name === 'play');
   app.hud.show(name === 'play' || name === 'pause');
   if (app.loop) app.loop.setPaused(name !== 'play');
+  if (app.touch) updateTouchVisibility();
+  if (name !== 'play' && app.audio) app.audio.stopLoops();
 }
 
 const ctx = () => ({ profile: app.profile, data: app.data });
@@ -258,6 +408,9 @@ function go(name) {
     case 'shop':
       app.shopView = showShop(app.screens, shopCtx(), shopActions(back));
       break;
+    case 'settings':
+      showSettings(app.screens, { settings: app.profile.settings, bindings: app.input.bindings }, settingsActions(back));
+      break;
     default:
       // Quests, shop and settings screens are added in later milestones.
       app.screens.show({ id: name, title: esc(name[0].toUpperCase() + name.slice(1)), onBack: back, narrow: true, html: '<p>Coming soon.</p>' });
@@ -269,7 +422,10 @@ function onPauseKey() {
   if (app.screen === 'play') pause();
   else if (app.screen === 'pause') {
     // In a pause sub-screen (settings, controls) Escape goes back to the pause menu.
-    if (app.screens.current && app.screens.current.id !== 'screen-pause') app.screens.back();
+    if (app.screens.current && app.screens.current.id !== 'screen-pause') {
+      app.input.cancelCapture();
+      app.screens.back();
+    }
     else resume();
   } else if (app.screen === 'menu' || app.screen === 'results') app.screens.back();
 }
@@ -281,7 +437,7 @@ function pause() {
   showPause(app.screens, { level: app.level }, {
     resume,
     retry: () => (app.level ? startLevel(app.level.id) : startSession(app.lastStart)),
-    settings: () => app.screens.show({ id: 'pause-settings', title: 'Settings', narrow: true, onBack: pauseMenu, html: '<p>Coming soon.</p>' }),
+    settings: () => showSettings(app.screens, { settings: app.profile.settings, bindings: app.input.bindings, inGame: true }, settingsActions(pauseMenu)),
     help: () => showHelp(app.screens, { bindings: app.input.bindings }, { back: pauseMenu }),
     quit: () => go('menu'),
   });
@@ -293,7 +449,9 @@ function pauseMenu() {
 
 function resume() {
   if (app.screen !== 'pause') return;
+  if (!$('#rotate-prompt').hidden) return;
   app.screens.close();
+  if (app.needsSceneRebuild) rebuildScene();
   app.input.reset();
   setScreen('play');
 }
@@ -315,6 +473,7 @@ function startLevel(levelId) {
 function startSession({ mapId, levelId = null, spawnId = null }) {
   endSession();
   app.lastStart = { mapId, levelId, spawnId };
+  app.timerWarned = false;
   const level = levelId ? app.levelsById[levelId] : null;
   const vehicle = app.profile.equipped.vehicle || 'skateboard';
   const a11y = app.profile.settings.a11y;
@@ -334,24 +493,7 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
   app.level = level;
   app.levelRun = level ? createLevelRun(level) : null;
   app.run = createRun({ mode: level ? 'level' : 'free', mapId, levelId });
-  const palette = choosePalette({ highContrast: a11y.highContrast, colorblind: a11y.colorblind });
-  const shadows = app.profile.settings.graphics.shadows;
-  app.sceneInfo = buildMapScene(session.map, session.world, {
-    highContrast: a11y.highContrast,
-    shadows,
-    objectMeshes: buildObjectMeshes(session.world, { palette, shadows }),
-  });
-  app.pickupMeshes = buildPickupMeshes(session.pickups, { palette });
-  app.sceneInfo.scene.add(app.pickupMeshes.group);
-  app.checkpointMeshes = null;
-  if (level && level.objective.type === 'timeTrial') {
-    const cps = level.objective.checkpoints.map((id) => map.checkpoints.find((c) => c.id === id));
-    app.checkpointMeshes = buildCheckpointMeshes(session.world, cps, { palette });
-    app.checkpointMeshes.setActive(0);
-    app.sceneInfo.scene.add(app.checkpointMeshes.group);
-  }
-  app.rider = createRiderModel(buildLook(app.profile, app.data.catalog));
-  app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
+  buildSessionScene();
   if (!app.profile.visitedMaps.includes(mapId)) {
     app.profile.visitedMaps.push(mapId);
     markDirty();
@@ -376,12 +518,34 @@ function startSession({ mapId, levelId = null, spawnId = null }) {
   }
 }
 
-function endSession() {
-  if (app.run && app.profile) {
-    finishRun(app.run, app.profile);
-    markDirty();
-    flushSave();
+/** Build all visuals for the current session (also used to rebuild after visual setting changes). */
+function buildSessionScene() {
+  const session = app.session;
+  const level = app.level;
+  const a11y = app.profile.settings.a11y;
+  const palette = choosePalette({ highContrast: a11y.highContrast, colorblind: a11y.colorblind });
+  const shadows = app.profile.settings.graphics.shadows;
+  app.sceneInfo = buildMapScene(session.map, session.world, {
+    highContrast: a11y.highContrast,
+    shadows,
+    objectMeshes: buildObjectMeshes(session.world, { palette, shadows }),
+  });
+  app.pickupMeshes = buildPickupMeshes(session.pickups, { palette });
+  for (const p of session.pickups) if (p.taken) app.pickupMeshes.setTaken(p.id, true);
+  app.sceneInfo.scene.add(app.pickupMeshes.group);
+  app.checkpointMeshes = null;
+  if (level && level.objective.type === 'timeTrial') {
+    const cps = level.objective.checkpoints.map((id) => session.map.checkpoints.find((c) => c.id === id));
+    app.checkpointMeshes = buildCheckpointMeshes(session.world, cps, { palette });
+    app.checkpointMeshes.setActive(app.levelRun ? app.levelRun.checkpointIndex : 0);
+    app.sceneInfo.scene.add(app.checkpointMeshes.group);
   }
+  app.rider = createRiderModel(buildLook(app.profile, app.data.catalog));
+  app.sceneInfo.scene.add(app.rider.group, app.rider.trail);
+  app.needsSceneRebuild = false;
+}
+
+function disposeSessionScene() {
   if (app.sceneInfo) app.sceneInfo.dispose();
   if (app.rider) app.rider.dispose();
   if (app.pickupMeshes) app.pickupMeshes.dispose();
@@ -390,6 +554,22 @@ function endSession() {
   app.checkpointMeshes = null;
   app.sceneInfo = null;
   app.rider = null;
+}
+
+function rebuildScene() {
+  if (!app.session) return;
+  disposeSessionScene();
+  buildSessionScene();
+  app.cameraRig.snap();
+}
+
+function endSession() {
+  if (app.run && app.profile) {
+    finishRun(app.run, app.profile);
+    markDirty();
+    flushSave();
+  }
+  disposeSessionScene();
   app.session = null;
   app.run = null;
   app.level = null;
@@ -423,9 +603,11 @@ function finishLevel() {
     levels: () => go('levels'),
     menu: () => go('menu'),
   });
+  cue(lr.status === 'complete' ? 'level' : 'fail');
   announce(
     `${lr.status === 'complete' ? 'Level complete' : 'Level failed'}: ${level.name}. ${lr.stars} of 3 stars.` +
       (bolts ? ` Plus ${bolts} Bolts.` : ''),
+    { priority: 'assertive' },
   );
 }
 
@@ -465,6 +647,7 @@ function tick(dt) {
         if (app.checkpointMeshes) app.checkpointMeshes.setActive(e.index);
         app.hud.toast(`Checkpoint ${e.index} of ${e.total}: ${e.time.toFixed(1)} s`, 1.5);
         announce(`Checkpoint ${e.index} of ${e.total}`);
+        cue('checkpoint');
       } else if (e.type === 'levelComplete' || e.type === 'levelFailed') {
         finishLevel();
         return;
@@ -476,6 +659,39 @@ function tick(dt) {
 function handleGameEvent(e) {
   if (e.type === 'land') landedThisFrame = true;
   if (e.type === 'pickup' && app.pickupMeshes) app.pickupMeshes.setTaken(e.id, true);
+  switch (e.type) {
+    case 'push':
+      cue('push');
+      break;
+    case 'ollie':
+      cue('ollie');
+      break;
+    // Only clean landings get the landing sound (a bail plays the crash instead).
+    case 'landClean':
+      cue('land');
+      break;
+    case 'trickLanded':
+      if (!e.grind) cue('land');
+      break;
+    case 'grindStart':
+      cue('grind');
+      break;
+    case 'pickup':
+      cue('pickup');
+      break;
+    case 'wallHit':
+      if (e.impactSpeed > 3) {
+        cue('wall');
+        app.cameraRig.addShake(Math.min(1, e.impactSpeed / 10));
+      }
+      break;
+    case 'bail':
+      cue('bail');
+      app.cameraRig.addShake(0.8);
+      break;
+    default:
+      break;
+  }
   const notes = applyEvent(app.run, app.profile, e, questCtx());
   for (const n of notes) notify(n);
   if (notes.length) markDirty();
@@ -487,22 +703,27 @@ function notify(n) {
     const mult = n.multiplier > 1 ? ` · x${n.multiplier.toFixed(1)}` : '';
     app.hud.showResult('clean', n.name, `+${n.awarded.toLocaleString('en-US')}${mult}`);
     app.hud.setScore(sc.score, sc.combo, comboMultiplier(sc.combo));
+    announce(`${n.name}, ${n.awarded} points${n.combo > 1 ? `, combo ${n.combo}` : ''}`, { category: 'trick' });
   } else if (n.type === 'bail') {
-    app.hud.showResult('bail', 'Bail', n.reason);
+    app.hud.showResult('bail', '', n.reason);
     app.hud.setScore(sc.score, 0, 1);
+    announce(`Bail: ${n.reason}`, { category: 'bail' });
   } else if (n.type === 'bolts') {
     app.hud.setBolts(app.profile.bolts);
     app.trackerDirty = true;
+    app.boltsToAnnounce = (app.boltsToAnnounce || 0) + n.amount;
   } else if (n.type === 'pickup') {
     app.hud.toast(`+${n.bolts} Bolts pickup`, 1.2);
   } else if (n.type === 'questComplete') {
     app.hud.toast(`Quest complete: ${n.title} · +${n.reward} Bolts`, 3);
-    announce(`Quest complete: ${n.title}. Plus ${n.reward} Bolts.`);
+    announce(`Quest complete: ${n.title}. Plus ${n.reward} Bolts.`, { category: 'quest' });
+    cue('quest');
     app.questLog.push({ id: n.id, title: n.title, reward: n.reward });
     updateTracker();
   } else if (n.type === 'comboEnd') {
     app.hud.setScore(sc.score, 0, 1);
     app.hud.toast(`Combo x${n.count} banked: ${n.points.toLocaleString('en-US')}`);
+    cue('combo');
   }
 }
 
@@ -596,6 +817,21 @@ function render(_alpha, frameSeconds) {
   app.hud.setLiveTrick(s.currentTrickText());
   app.hud.setBalance(s.grind ? s.grind.balance : null);
   updateObjectiveHud();
+  app.audio.update(speed, b.grounded, b.state === 'grind');
+  app.boltsTimer = (app.boltsTimer || 0) + fdt;
+  if (app.boltsToAnnounce && app.boltsTimer > 1.5) {
+    app.boltsTimer = 0;
+    announce(`Plus ${app.boltsToAnnounce} Bolts, ${app.profile.bolts} total`, { category: 'bolts' });
+    app.boltsToAnnounce = 0;
+  }
+  if (app.levelRun && app.screen === 'play') {
+    const left = app.level.timeLimit - app.levelRun.time;
+    if (left <= 10 && !app.timerWarned) {
+      app.timerWarned = true;
+      cue('timer');
+      announce('10 seconds left', { category: 'timer' });
+    }
+  }
   app.trackerTimer = (app.trackerTimer || 0) + fdt;
   if (app.trackerTimer > 0.5) {
     app.trackerTimer = 0;
@@ -673,6 +909,24 @@ window.__game = {
       wrap.appendChild(fig);
     }
     document.body.appendChild(wrap);
+  },
+  a11y() {
+    return {
+      bodyClasses: [...document.body.classList],
+      textScale: getComputedStyle(document.documentElement).getPropertyValue('--text-scale').trim(),
+      announcements: app.announcer.history,
+      audio: app.audio.state,
+      timeScale: app.loop.timeScale,
+      fov: app.camera.fov,
+      touchVisible: !$('#touch-controls').hidden,
+      sceneBackground: app.sceneInfo ? '#' + app.sceneInfo.scene.background.getHexString() : null,
+      sessionSettings: app.session ? { ...app.session.settings } : null,
+      rotatePrompt: !$('#rotate-prompt').hidden,
+      bindings: app.input.bindings,
+    };
+  },
+  changeSetting(path, value) {
+    changeSetting(path, value);
   },
   riderLook() {
     return app.rider ? app.rider.describe() : null;
